@@ -9,7 +9,7 @@ function About (){
     About <span className="text-neutral-500">Me</span>
   </h2>
 
-  <div className="flex justify-center">
+  <div className="flex justify-center pb-10">
     <div className="w-full lg:w-2/3 px-4">
       <p className="text-center text-2xl leading-relaxed text-neutral-500">
             Hi! I’m <span className="text-neutral-300">Aditya Potdar</span>, an <span className="text-neutral-100"> Electronics and Computer Engineering student </span> deeply interested 

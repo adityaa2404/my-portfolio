@@ -3,6 +3,7 @@ import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import About from './components/About';
 import Tech from './components/Tech';
+import Achievements from './components/Achievements';
 
 function App() {
   
@@ -20,6 +21,7 @@ function App() {
         <Hero/>
         <About/>
         <Tech/>
+        <Achievements/>
       </div>
       
     </div>

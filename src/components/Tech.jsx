@@ -7,11 +7,12 @@ import { SiExpress } from 'react-icons/si';
 import { FaNodeJs } from 'react-icons/fa';
 import { FaPython } from 'react-icons/fa';
 import { SiCplusplus } from 'react-icons/si';
+import { SiJavascript } from 'react-icons/si';
 
 
 function Tech(){
     return (
-        <div className="border-b border-neutral-800 pb-24">
+        <div className="border-b border-neutral-800 pb-26">
             <h2 className="my-20 text-center text-4xl">
                 <span className="bg-gradient-to-br from-dark via-slate-100 to-darkest text-transparent bg-clip-text">Technologies</span>
             </h2>
@@ -23,6 +24,10 @@ function Tech(){
 
                 <div className="rounded-full border-4 border-neutral-800 p-4">
                    <SiCplusplus className="text-4xl text-sky-700 " />  
+                </div>
+
+                <div className="rounded-full border-4 border-neutral-800 p-4">
+                   <SiJavascript className="text-4xl text-yellow-400" title="JavaScript" />  
                 </div>
                 
                 <div className="rounded-full border-4 border-neutral-800 p-4">
