@@ -54,20 +54,10 @@ utilities - typography , font size , color
 
 @layer components {
 
-    /*.card{
-        @apply px-30 h-110 w-180 p-10 m-20 bg-c3 rounded-3xl ;
+    
+    .hovers{
+        @apply hover:border-cyan-700 transition;
     }
-    .card {
-        @apply px-4 sm:px-8 h-auto w-full max-w-screen-md p-6 m-4 bg-c3 rounded-3xl;
-    }
-
-    .weather {
-        @apply text-center font-bebas font-extrabold text-[50px];
-    }
-
-    #p1 {
-        @apply text-center font-noto-sans-f text-xl text-c3;
-    }*/
 }
 
 
