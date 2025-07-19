@@ -12,7 +12,7 @@ import { SiJavascript } from 'react-icons/si';
 
 function Tech(){
     return (
-        <div className="border-b border-neutral-800 pb-26 ">
+        <div id='tech' className="border-b border-neutral-800 pb-26 ">
             <h2 className="my-20 text-center text-4xl">
                 <span className="bg-gradient-to-br from-dark via-slate-100 to-darkest text-transparent bg-clip-text">Technologies</span>
             </h2>
