@@ -4,7 +4,7 @@ import React from "react";
 
 function About (){
     return (
-        <div id='About'className="About border-b border-neutral-900 pb-4">
+        <div className="About border-b border-neutral-900 pb-4">
   <h2 className="my-20 text-center text-4xl">
     About <span className="text-neutral-500">Me</span>
   </h2>

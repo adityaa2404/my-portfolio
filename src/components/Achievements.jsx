@@ -6,7 +6,7 @@ import cc from '../assets/codechef.png';
 import cer from '../assets/cer.png'
 const Achievements = () => {
   return (
-    <div  className="border-b border-neutral-800 pb-26 px-4" id="achievements">
+    <div className="border-b border-neutral-800 pb-26 px-4" id="achievements">
       <h2 className="my-20 text-center text-4xl">
         <span className="bg-gradient-to-br from-dark via-slate-100 to-darkest text-transparent bg-clip-text">
           Education & Achievements
