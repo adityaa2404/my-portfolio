@@ -88,6 +88,39 @@ const fadeUp = {
 };
 const stagger = { animate: { transition: { staggerChildren: 0.04 } } };
 
+/* ── X/Twitter-style Shimmer Skeleton ────────── */
+function TweetSkeleton() {
+  return (
+    <div className="tweet-skeleton">
+      <div className="skel-avatar shimmer" />
+      <div className="skel-body">
+        <div className="skel-header">
+          <div className="skel-name shimmer" />
+          <div className="skel-handle shimmer" />
+        </div>
+        <div className="skel-line shimmer" style={{ width: '100%' }} />
+        <div className="skel-line shimmer" style={{ width: '85%' }} />
+        <div className="skel-line shimmer" style={{ width: '60%' }} />
+        <div className="skel-actions">
+          {[1, 2, 3, 4].map((n) => (
+            <div key={n} className="skel-action shimmer" />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FeedSkeletonLoader() {
+  return (
+    <div className="skeleton-feed">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <TweetSkeleton key={i} />
+      ))}
+    </div>
+  );
+}
+
 /* ── Tweet Card ──────────────────────────────── */
 function TweetCard({ post, index, liked, onToggleLike, avatar }) {
   return (
@@ -436,6 +469,7 @@ export default function MainFeed({
   lcHeatmap,
   likedPosts,
   toggleLike,
+  loading,
 }) {
   const [feedTab, setFeedTab] = useState('foryou');
   const [scattered, setScattered] = useState(false);
@@ -536,25 +570,29 @@ export default function MainFeed({
                 </div>
               </div>
 
-              {/* Sort posts: pinned first, then by date descending */}
-              {[...posts]
-                .sort((a, b) => {
-                  if (a.type === 'pinned') return -1;
-                  if (b.type === 'pinned') return 1;
-                  const da = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-                  const db = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-                  return db - da;
-                })
-                .map((post, i) => (
-                <TweetCard
-                  key={`${post.type}-${post.createdAt || i}`}
-                  post={post}
-                  index={i}
-                  liked={!!likedPosts[i]}
-                  onToggleLike={toggleLike}
-                  avatar={ghStats?.avatar}
-                />
-              ))}
+              {/* Loading skeleton or posts */}
+              {loading ? (
+                <FeedSkeletonLoader />
+              ) : (
+                [...posts]
+                  .sort((a, b) => {
+                    if (a.type === 'pinned') return -1;
+                    if (b.type === 'pinned') return 1;
+                    const da = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                    const db = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                    return db - da;
+                  })
+                  .map((post, i) => (
+                  <TweetCard
+                    key={post._id || `${post.type}-${post.createdAt}-${i}`}
+                    post={post}
+                    index={i}
+                    liked={!!likedPosts[i]}
+                    onToggleLike={toggleLike}
+                    avatar={ghStats?.avatar}
+                  />
+                ))
+              )}
             </motion.div>
           )}
 

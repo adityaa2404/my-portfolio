@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import LeftSidebar from './LeftSidebar';
 import MainFeed from './MainFeed';
 import RightSidebar from './RightSidebar';
@@ -24,75 +24,7 @@ const navItems = [
   },
 ];
 
-const starterPosts = [
-  {
-    type: 'pinned',
-    title: 'Pinned',
-    text: "Hi, I'm Aditya Potdar. I build scalable web apps, AI-powered systems, and solve real-world problems through clean, efficient code.",
-    tag: '#buildinpublic',
-    createdAt: '2026-02-20T10:30:00+05:30',
-    replies: 42,
-    reposts: 18,
-    likes: 256,
-    views: '12.4K',
-  },
-  {
-    type: 'build',
-    title: 'Build Log',
-    text: 'Shipped this Twitter-style portfolio with dark/light mode, Three.js tech orbit, AI chat assistant, and live GitHub + LeetCode stats. Every pixel intentional.',
-    tag: '#frontend',
-    createdAt: '2026-02-24T15:45:00+05:30',
-    replies: 8,
-    reposts: 12,
-    likes: 89,
-    views: '3.2K',
-  },
-  {
-    type: 'thread',
-    title: '🧵 Problem → Solution',
-    text: "Problem: Static portfolios feel dead.\nSolution: A timeline-based portfolio with live stats, trending tech cards, and conversational AI — feels alive, current, and real.",
-    tag: '#productthinking',
-    createdAt: '2026-02-22T09:15:00+05:30',
-    replies: 15,
-    reposts: 24,
-    likes: 178,
-    views: '8.1K',
-  },
-  {
-    type: 'github',
-    title: 'GitHub Activity',
-    text: 'Pushed 5 commits to portfolio repo. Improved UX performance with route-level rendering and lazy-loaded Three.js scenes.',
-    image: '/github.webp',
-    tag: '#github',
-    createdAt: '2026-02-25T14:30:00+05:30',
-    replies: 3,
-    reposts: 5,
-    likes: 34,
-    views: '1.8K',
-  },
-  {
-    type: 'build',
-    title: 'LawBuddy AI',
-    text: 'Built an AI legal assistant — OCR-based parsing with Google Document AI, clause interpretation with Vertex AI (Gemini), and Pinecone vector search. Top 44 accuracy at HackRx 6.0. 🚀',
-    tag: '#AI #hackathon',
-    createdAt: '2026-01-15T11:00:00+05:30',
-    replies: 21,
-    reposts: 30,
-    likes: 312,
-    views: '15.2K',
-  },
-  {
-    type: 'build',
-    title: 'Lister AI',
-    text: 'Voice → categorized material list → Excel export. Whisper AI handles transcription, Gemini LLM categorizes, FastAPI + Pandas generates Excel. Zero manual effort.',
-    tag: '#voiceAI #automation',
-    createdAt: '2025-12-20T16:20:00+05:30',
-    replies: 6,
-    reposts: 9,
-    likes: 67,
-    views: '4.5K',
-  },
-];
+const starterPosts = [];
 
 const projectCards = [
   {
@@ -149,19 +81,6 @@ const interestBlocks = [
   { name: '🏍 Bikes', headline: 'Adventure touring segment sees new launches' },
 ];
 
-/* ── LeetCode GraphQL query ─────────────────── */
-const LC_RECENT_SUBMISSIONS_QUERY = `
-  query recentAcSubmissions($username: String!, $limit: Int!) {
-    recentAcSubmissionList(username: $username, limit: $limit) {
-      title
-      titleSlug
-      timestamp
-      lang
-      statusDisplay
-    }
-  }
-`;
-
 export default function PortfolioShell() {
   const [path, setPath] = useState('/');
   const [theme, setTheme] = useState('dark');
@@ -172,6 +91,7 @@ export default function PortfolioShell() {
   const [lcHeatmap, setLcHeatmap] = useState([]);
   const [posts, setPosts] = useState(starterPosts);
   const [likedPosts, setLikedPosts] = useState({});
+  const [feedLoading, setFeedLoading] = useState(true);
 
   // Theme persistence
   useEffect(() => {
@@ -195,216 +115,45 @@ export default function PortfolioShell() {
 
   // Fetch trending — now handled inside RightSidebar itself
 
-  // Fetch GitHub events + stats + LeetCode submissions
+  // Sync GitHub/LeetCode posts to DB, then load everything from DB
   useEffect(() => {
     (async () => {
-      /* ── GitHub stats ─────────── */
-      try {
-        const [userRes, repoRes] = await Promise.all([
-          fetch('https://api.github.com/users/adityaa2404'),
-          fetch('https://api.github.com/users/adityaa2404/repos?per_page=100'),
-        ]);
-        const user = await userRes.json();
-        const repos = await repoRes.json();
-        const stars = Array.isArray(repos)
-          ? repos.reduce((s, r) => s + r.stargazers_count, 0)
-          : 0;
-        setGhStats({
-          followers: user.followers,
-          repos: user.public_repos,
-          stars,
-          avatar: user.avatar_url,
-        });
-      } catch {
-        setGhStats(null);
-      }
+      setFeedLoading(true);
 
-      /* ── GitHub contribution heatmap ─── */
+      // Auto-seed if DB is empty (first load)
       try {
-        const heatRes = await fetch(
-          'https://github-contributions-api.jogruber.de/v4/adityaa2404?y=last'
-        );
-        const heatData = await heatRes.json();
-        if (heatData?.contributions) {
-          // Flatten to array of { date, count, level }
-          const flat = heatData.contributions.flatMap((week) =>
-            Array.isArray(week) ? week : []
-          );
-          setGhHeatmap(flat.length > 0 ? flat : heatData.contributions);
+        const postsRes = await fetch('/api/posts');
+        const dbPosts = await postsRes.json();
+        if (!Array.isArray(dbPosts) || dbPosts.length === 0) {
+          await fetch('/api/seed', { method: 'POST' });
         }
-      } catch {
-        setGhHeatmap([]);
-      }
+      } catch {}
 
-      /* ── GitHub events → dynamic posts ─── */
+      // Sync GitHub events + LeetCode submissions → DB (server-side, 30min TTL)
       try {
-        const eventsRes = await fetch('https://api.github.com/users/adityaa2404/events?per_page=10');
-        const events = await eventsRes.json();
-        if (Array.isArray(events)) {
-          const pushEvents = events
-            .filter((e) => e.type === 'PushEvent' || e.type === 'PullRequestEvent')
-            .slice(0, 4);
+        await fetch('/api/sync', { method: 'POST' });
+      } catch {}
 
-          // For PushEvents, try to get commit count via compare API
-          const ghPosts = await Promise.all(
-            pushEvents.map(async (e) => {
-              if (e.type === 'PushEvent') {
-                const repoName = e.repo?.name || '';
-                const before = e.payload?.before;
-                const head = e.payload?.head;
-                let commitCount = e.payload?.size || 0;
-                let commitMsgs = '';
-
-                // Try compare API for actual commit details
-                if (before && head && repoName) {
-                  try {
-                    const cmpRes = await fetch(
-                      `https://api.github.com/repos/${repoName}/compare/${before}...${head}`
-                    );
-                    const cmp = await cmpRes.json();
-                    commitCount = cmp.ahead_by || cmp.total_commits || commitCount;
-                    if (Array.isArray(cmp.commits)) {
-                      commitMsgs = cmp.commits
-                        .slice(0, 3)
-                        .map((c) => `• ${c.commit?.message?.split('\n')[0] || 'commit'}`)
-                        .join('\n');
-                    }
-                  } catch {}
-                }
-
-                // Fallback if commits from payload exist
-                if (!commitMsgs && Array.isArray(e.payload?.commits) && e.payload.commits.length > 0) {
-                  commitCount = e.payload.commits.length;
-                  commitMsgs = e.payload.commits
-                    .slice(0, 3)
-                    .map((c) => `• ${c.message}`)
-                    .join('\n');
-                }
-
-                const shortRepo = repoName.split('/')[1] || repoName;
-                return {
-                  type: 'github',
-                  title: `Push to ${shortRepo}`,
-                  text: commitCount > 0
-                    ? `Pushed ${commitCount} commit${commitCount !== 1 ? 's' : ''}${commitMsgs ? ':\n' + commitMsgs : ''}`
-                    : `Pushed to ${shortRepo} branch ${(e.payload?.ref || '').replace('refs/heads/', '')}`,
-                  image: '/github.webp',
-                  tag: '#github #commits',
-                  replies: Math.floor(Math.random() * 5),
-                  reposts: Math.floor(Math.random() * 8),
-                  likes: Math.floor(Math.random() * 40) + 5,
-                  views: `${(Math.random() * 3 + 0.5).toFixed(1)}K`,
-                  createdAt: e.created_at,
-                };
-              }
-              // PullRequestEvent
-              const pr = e.payload?.pull_request;
-              return {
-                type: 'github',
-                title: `PR ${e.payload?.action}: ${pr?.title || 'Pull Request'}`,
-                text: `${e.payload?.action === 'opened' ? 'Opened' : 'Updated'} PR in ${e.repo?.name?.split('/')[1] || e.repo?.name}${pr?.body ? `: ${pr.body.slice(0, 120)}` : ''}`,
-                image: '/github.webp',
-                tag: '#github #pullrequest',
-                replies: Math.floor(Math.random() * 8),
-                reposts: Math.floor(Math.random() * 10),
-                likes: Math.floor(Math.random() * 50) + 10,
-                views: `${(Math.random() * 4 + 1).toFixed(1)}K`,
-                createdAt: e.created_at,
-              };
-            })
-          );
-
-          if (ghPosts.length > 0) {
-            setPosts((prev) => [...prev, ...ghPosts]);
-          }
+      // Load all posts from DB (already sorted: pinned first, then newest)
+      try {
+        const postsRes = await fetch('/api/posts');
+        const allPosts = await postsRes.json();
+        if (Array.isArray(allPosts) && allPosts.length > 0) {
+          setPosts(allPosts);
         }
-      } catch {
-        // GitHub events fetch failed silently
-      }
+      } catch {}
 
-      /* ── LeetCode stats ─────────── */
+      // Fetch cached stats from API (profile stats + heatmaps)
       try {
-        const [lcBaseRes, lcSolvedRes, lcContestRes, lcCalRes] = await Promise.all([
-          fetch('https://alfa-leetcode-api.onrender.com/adityaapotdar'),
-          fetch('https://alfa-leetcode-api.onrender.com/adityaapotdar/solved'),
-          fetch('https://alfa-leetcode-api.onrender.com/adityaapotdar/contest'),
-          fetch('https://alfa-leetcode-api.onrender.com/adityaapotdar/calendar'),
-        ]);
-        const lcBase = await lcBaseRes.json();
-        const lcSolved = await lcSolvedRes.json();
-        let contestRating = null;
-        try {
-          const lcContest = await lcContestRes.json();
-          if (lcContest.contestRating) {
-            contestRating = Math.round(lcContest.contestRating);
-          }
-        } catch {}
+        const statsRes = await fetch('/api/stats');
+        const stats = await statsRes.json();
+        if (stats.ghStats) setGhStats(stats.ghStats);
+        if (stats.ghHeatmap) setGhHeatmap(stats.ghHeatmap);
+        if (stats.lcStats) setLcStats(stats.lcStats);
+        if (stats.lcHeatmap) setLcHeatmap(stats.lcHeatmap);
+      } catch {}
 
-        let streak = null;
-        let totalActiveDays = null;
-        // Parse submission calendar for heatmap
-        try {
-          const lcCal = await lcCalRes.json();
-          streak = lcCal.streak ?? null;
-          totalActiveDays = lcCal.totalActiveDays ?? null;
-          const calStr = lcCal.submissionCalendar;
-          if (calStr) {
-            const cal = typeof calStr === 'string' ? JSON.parse(calStr) : calStr;
-            const entries = Object.entries(cal).map(([ts, count]) => ({
-              date: new Date(Number(ts) * 1000).toISOString().split('T')[0],
-              count: Number(count),
-            }));
-            entries.sort((a, b) => a.date.localeCompare(b.date));
-            setLcHeatmap(entries);
-          }
-        } catch {}
-
-        setLcStats({
-          solved: lcSolved.solvedProblem,
-          easy: lcSolved.easySolved,
-          medium: lcSolved.mediumSolved,
-          hard: lcSolved.hardSolved,
-          ranking: lcBase.ranking,
-          contestRating,
-          streak,
-          totalActiveDays,
-        });
-      } catch {
-        setLcStats(null);
-      }
-
-      /* ── LeetCode recent submissions → dynamic posts ─── */
-      try {
-        const lcSubRes = await fetch('/api/leetcode', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            query: LC_RECENT_SUBMISSIONS_QUERY,
-            variables: { username: 'adityaapotdar', limit: 5 },
-          }),
-        });
-        const lcSubData = await lcSubRes.json();
-        const submissions = lcSubData?.data?.recentAcSubmissionList || [];
-
-        if (submissions.length > 0) {
-          const lcPosts = submissions.slice(0, 3).map((sub) => ({
-            type: 'leetcode',
-            title: `Solved: ${sub.title}`,
-            text: `Aditya just submitted "${sub.title}" on LeetCode in ${sub.lang}. Keep grinding! 🧠`,
-            image: '/leetcode.png',
-            tag: '#leetcode #dsa',
-            replies: Math.floor(Math.random() * 5),
-            reposts: Math.floor(Math.random() * 6),
-            likes: Math.floor(Math.random() * 30) + 5,
-            views: `${(Math.random() * 2 + 0.5).toFixed(1)}K`,
-            createdAt: new Date(parseInt(sub.timestamp) * 1000).toISOString(),
-          }));
-
-          setPosts((prev) => [...prev, ...lcPosts]);
-        }
-      } catch {
-        // LeetCode submissions fetch failed silently
-      }
+      setFeedLoading(false);
     })();
   }, []);
 
@@ -463,6 +212,7 @@ export default function PortfolioShell() {
         lcHeatmap={lcHeatmap}
         likedPosts={likedPosts}
         toggleLike={toggleLike}
+        loading={feedLoading}
       />
       <RightSidebar />
       <MobileNav

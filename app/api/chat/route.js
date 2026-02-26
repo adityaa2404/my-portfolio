@@ -57,21 +57,13 @@ export async function POST(request) {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-
-    // Build conversation history for Gemini
-    const chatHistory = messages.slice(0, -1).map((msg) => ({
-      role: msg.role === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.text }],
-    }));
-
-    const chat = model.startChat({
-      history: chatHistory,
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.0-flash',
       systemInstruction: SYSTEM_PROMPT,
     });
 
     const lastMessage = messages[messages.length - 1].text;
-    const result = await chat.sendMessage(lastMessage);
+    const result = await model.generateContent(lastMessage);
     const reply = result.response.text();
 
     // Detect if it's a contact query to add quick actions
