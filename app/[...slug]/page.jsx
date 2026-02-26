@@ -1,5 +1,5 @@
-import PortfolioApp from '../../src/components/PortfolioApp';
+import PortfolioShell from '../components/PortfolioShell';
 
 export default function DynamicPortfolioPage() {
-  return <PortfolioApp />;
+  return <PortfolioShell />;
 }

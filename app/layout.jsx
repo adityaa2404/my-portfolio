@@ -2,10 +2,12 @@ import './globals.css';
 
 export const metadata = {
   title: 'Aditya Potdar | Developer OS Portfolio',
-  description: 'Twitter/X-inspired living portfolio of Aditya Potdar with AI, live stats, and immersive animations.',
+  description:
+    'Twitter/X-inspired living portfolio of Aditya Potdar — Full Stack Developer, competitive programmer, AI builder.',
   openGraph: {
-    title: 'Aditya Potdar Portfolio',
-    description: 'Developer × Tech × Futuristic portfolio experience',
+    title: 'Aditya Potdar | Developer OS',
+    description:
+      'A living developer timeline — projects, skills, and achievements presented as a developer operating system.',
     type: 'website',
   },
 };
