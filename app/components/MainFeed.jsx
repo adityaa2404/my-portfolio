@@ -15,13 +15,70 @@ import {
   FiMoon,
   FiArrowLeft,
 } from 'react-icons/fi';
-import { SiLeetcode } from 'react-icons/si';
+import {
+  SiLeetcode,
+  SiJavascript, SiTypescript, SiPython, SiHtml5, SiCss3,
+  SiReact, SiNextdotjs, SiExpress, SiNodedotjs, SiTailwindcss, SiSpringboot,
+  SiMongodb, SiPostgresql, SiMysql, SiSupabase, SiFirebase, SiPrisma,
+  SiGit, SiGithub, SiVscodium, SiIntellijidea, SiVercel, SiPostman, SiDocker,
+  SiCplusplus, SiC,
+} from 'react-icons/si';
+import { FaJava } from 'react-icons/fa';
 import dynamic from 'next/dynamic';
 import { useMemo, useState } from 'react';
 
-const TechOrbit = dynamic(() => import('./TechOrbit'), { ssr: false });
 const Globe = dynamic(() => import('./Globe'), { ssr: false });
-const TechGlobe = dynamic(() => import('./TechGlobe'), { ssr: false });
+
+/* ── format IST helper ────────────────────────── */
+function formatIST(dateStr) {
+  if (!dateStr) return '';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+  } catch {
+    return '';
+  }
+}
+
+/* ── Skill Icon Map ──────────────────────────── */
+const SKILL_ICON_MAP = {
+  'JavaScript': { Icon: SiJavascript, color: '#F7DF1E' },
+  'TypeScript': { Icon: SiTypescript, color: '#3178C6' },
+  'C': { Icon: SiC, color: '#A8B9CC' },
+  'C++': { Icon: SiCplusplus, color: '#00599C' },
+  'Java': { Icon: FaJava, color: '#ED8B00' },
+  'Python': { Icon: SiPython, color: '#3776AB' },
+  'HTML': { Icon: SiHtml5, color: '#E34F26' },
+  'CSS': { Icon: SiCss3, color: '#1572B6' },
+  'React': { Icon: SiReact, color: '#61DAFB' },
+  'Next.js': { Icon: SiNextdotjs, color: '#ffffff' },
+  'Express.js': { Icon: SiExpress, color: '#ffffff' },
+  'Node.js': { Icon: SiNodedotjs, color: '#5FA04E' },
+  'Tailwind CSS': { Icon: SiTailwindcss, color: '#06B6D4' },
+  'Spring Boot': { Icon: SiSpringboot, color: '#6DB33F' },
+  'MongoDB': { Icon: SiMongodb, color: '#47A248' },
+  'PostgreSQL': { Icon: SiPostgresql, color: '#4169E1' },
+  'MySQL': { Icon: SiMysql, color: '#4479A1' },
+  'Supabase': { Icon: SiSupabase, color: '#3FCF8E' },
+  'Firebase': { Icon: SiFirebase, color: '#DD2C00' },
+  'Prisma': { Icon: SiPrisma, color: '#2D3748' },
+  'Git': { Icon: SiGit, color: '#F05032' },
+  'GitHub': { Icon: SiGithub, color: '#ffffff' },
+  'VS Code': { Icon: SiVscodium, color: '#007ACC' },
+  'IntelliJ IDEA': { Icon: SiIntellijidea, color: '#000000' },
+  'Vercel': { Icon: SiVercel, color: '#ffffff' },
+  'Postman': { Icon: SiPostman, color: '#FF6C37' },
+  'Docker': { Icon: SiDocker, color: '#2496ED' },
+};
 
 /* ── animation variants ─────────────────────── */
 const fadeUp = {
@@ -29,28 +86,10 @@ const fadeUp = {
   animate: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -12 },
 };
-const stagger = { animate: { transition: { staggerChildren: 0.07 } } };
+const stagger = { animate: { transition: { staggerChildren: 0.04 } } };
 
 /* ── Tweet Card ──────────────────────────────── */
-function TweetCard({ post, index, liked, onToggleLike }) {
-  const typeEmoji =
-    post.type === 'pinned'
-      ? '📌'
-      : post.type === 'thread'
-      ? '🧵'
-      : post.type === 'github'
-      ? '🐙'
-      : post.type === 'leetcode'
-      ? '🧠'
-      : '🔧';
-
-  const avatarImage =
-    post.type === 'github'
-      ? '/github.webp'
-      : post.type === 'leetcode'
-      ? '/leetcode.png'
-      : null;
-
+function TweetCard({ post, index, liked, onToggleLike, avatar }) {
   return (
     <motion.article
       className={`tweet-card ${post.type === 'pinned' ? 'pinned' : ''}`}
@@ -58,8 +97,7 @@ function TweetCard({ post, index, liked, onToggleLike }) {
       initial="initial"
       animate="animate"
       exit="exit"
-      transition={{ duration: 0.35, delay: index * 0.06 }}
-      layout
+      transition={{ duration: 0.25, delay: Math.min(index * 0.03, 0.4) }}
     >
       {post.type === 'pinned' && (
         <div className="tweet-pinned-label">
@@ -68,10 +106,10 @@ function TweetCard({ post, index, liked, onToggleLike }) {
       )}
       <div className="tweet-body">
         <div className="tweet-avatar-col">
-          {avatarImage ? (
+          {avatar ? (
             <img
-              src={avatarImage}
-              alt={post.type}
+              src={avatar}
+              alt="Aditya"
               className="tweet-avatar-img-icon"
               style={{
                 width: 40,
@@ -81,7 +119,7 @@ function TweetCard({ post, index, liked, onToggleLike }) {
               }}
             />
           ) : (
-            <div className="tweet-avatar">{typeEmoji}</div>
+            <div className="tweet-avatar">AP</div>
           )}
         </div>
         <div className="tweet-content-col">
@@ -90,9 +128,12 @@ function TweetCard({ post, index, liked, onToggleLike }) {
             <span className="tweet-handle">@aaditya2404</span>
             <span className="tweet-dot">·</span>
             <span className="tweet-timestamp">
-              {post.title || 'Just now'}
+              {formatIST(post.createdAt) || 'Just now'}
             </span>
           </div>
+          {post.title && post.title !== 'Pinned' && (
+            <p className="tweet-title-line">{post.title}</p>
+          )}
           <p className="tweet-text">{post.text}</p>
           {/* Post image for github/leetcode posts */}
           {post.image && (
@@ -142,35 +183,59 @@ function TweetCard({ post, index, liked, onToggleLike }) {
   );
 }
 
-/* ── Project Card ────────────────────────────── */
+/* ── Project Card (redesigned) ────────────────── */
 function ProjectCard({ project, index }) {
   return (
     <motion.div
-      className="project-card"
+      className="project-card-v2"
       variants={fadeUp}
       initial="initial"
       animate="animate"
-      transition={{ duration: 0.4, delay: index * 0.12 }}
-      whileHover={{ y: -4, boxShadow: '0 12px 40px rgba(29,155,240,0.12)' }}
+      transition={{ duration: 0.45, delay: index * 0.14 }}
+      whileHover={{ y: -6, boxShadow: '0 16px 48px rgba(29,155,240,0.18)' }}
     >
-      <div className="project-card-accent" style={{ background: project.gradient }} />
-      <div className="project-card-inner">
-        <div className="project-emoji">{project.emoji}</div>
-        <h3 className="project-title">{project.title}</h3>
-        <p className="project-stack">{project.stack}</p>
-        <p className="project-desc">{project.description}</p>
-        <div className="project-metric">
+      {/* Gradient banner */}
+      <div className="pv2-banner" style={{ background: project.gradient }}>
+        <span className="pv2-emoji">{project.emoji}</span>
+        {project.status && <span className="pv2-status">{project.status}</span>}
+      </div>
+
+      <div className="pv2-body">
+        <h3 className="pv2-title">{project.title}</h3>
+
+        {/* Tech tags */}
+        <div className="pv2-tags">
+          {(Array.isArray(project.stack) ? project.stack : [project.stack]).map((t) => (
+            <span key={t} className="pv2-tag">{t}</span>
+          ))}
+        </div>
+
+        <p className="pv2-desc">{project.description}</p>
+
+        {/* Highlights */}
+        {project.highlights && (
+          <ul className="pv2-highlights">
+            {project.highlights.map((h) => (
+              <li key={h}>{h}</li>
+            ))}
+          </ul>
+        )}
+
+        {/* Metric badge */}
+        <div className="pv2-metric">
           <FiBarChart2 size={14} /> {project.metric}
         </div>
-        <div className="project-links">
+
+        {/* Links */}
+        <div className="pv2-links">
           {project.github && (
-            <a href={project.github} target="_blank" rel="noopener noreferrer">
-              <FiGithub size={16} /> Code
+            <a href={project.github} target="_blank" rel="noopener noreferrer" className="pv2-link">
+              <FiGithub size={15} /> Code
             </a>
           )}
           {project.demo && (
-            <a href={project.demo} target="_blank" rel="noopener noreferrer">
-              <FiExternalLink size={16} /> Demo
+            <a href={project.demo} target="_blank" rel="noopener noreferrer" className="pv2-link pv2-link-demo">
+              <FiExternalLink size={15} /> Demo
             </a>
           )}
         </div>
@@ -180,7 +245,8 @@ function ProjectCard({ project, index }) {
 }
 
 /* ── Skill Chip ──────────────────────────────── */
-function SkillChip({ name, delay }) {
+function SkillChip({ name, icon, delay }) {
+  const IconComp = icon?.Icon;
   return (
     <motion.span
       className="skill-chip"
@@ -189,6 +255,7 @@ function SkillChip({ name, delay }) {
       transition={{ duration: 0.3, delay }}
       whileHover={{ scale: 1.08, backgroundColor: 'var(--accent)', color: '#fff' }}
     >
+      {IconComp && <IconComp size={16} color={icon.color} />}
       {name}
     </motion.span>
   );
@@ -210,6 +277,151 @@ function StatCard({ label, value, sub, color }) {
   );
 }
 
+/* ── GitHub Heatmap ─────────────────────────── */
+function GitHubHeatmap({ data }) {
+  // data may be flat array of { date, count, level } or nested weeks
+  // Normalize to flat array, take last ~365 entries
+  let flat = [];
+  if (Array.isArray(data)) {
+    if (data.length > 0 && Array.isArray(data[0])) {
+      flat = data.flat();
+    } else {
+      flat = data;
+    }
+  }
+
+  // Take last 365 days worth
+  const recent = flat.slice(-371);
+
+  // Group into weeks (columns of 7)
+  const weeks = [];
+  for (let i = 0; i < recent.length; i += 7) {
+    weeks.push(recent.slice(i, i + 7));
+  }
+
+  const getColor = (level, count) => {
+    if (count === 0 || level === 0) return 'var(--heatmap-0, rgba(255,255,255,0.06))';
+    if (level === 1) return 'var(--heatmap-1, #0e4429)';
+    if (level === 2) return 'var(--heatmap-2, #006d32)';
+    if (level === 3) return 'var(--heatmap-3, #26a641)';
+    return 'var(--heatmap-4, #39d353)';
+  };
+
+  const totalContribs = recent.reduce((s, d) => s + (d.count || 0), 0);
+
+  if (weeks.length === 0) return null;
+
+  return (
+    <div className="gh-heatmap">
+      <div className="gh-heatmap-grid">
+        {weeks.map((week, wi) => (
+          <div key={wi} className="gh-heatmap-col">
+            {week.map((day, di) => (
+              <div
+                key={di}
+                className="gh-heatmap-cell"
+                title={`${day.date}: ${day.count} contribution${day.count !== 1 ? 's' : ''}`}
+                style={{ backgroundColor: getColor(day.level, day.count) }}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+      <div className="gh-heatmap-footer">
+        <span className="gh-heatmap-total">{totalContribs} contributions in the last year</span>
+        <div className="gh-heatmap-legend">
+          <span>Less</span>
+          {[0, 1, 2, 3, 4].map((l) => (
+            <div
+              key={l}
+              className="gh-heatmap-cell"
+              style={{ backgroundColor: getColor(l, l) }}
+            />
+          ))}
+          <span>More</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── LeetCode Heatmap ───────────────────────── */
+function LeetCodeHeatmap({ data }) {
+  // data = [{ date: 'YYYY-MM-DD', count }] sorted by date
+  // Take last ~365 days
+  const now = new Date();
+  const oneYearAgo = new Date(now);
+  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+  const recent = data.filter((d) => d.date >= oneYearAgo.toISOString().split('T')[0]);
+  const maxCount = Math.max(...recent.map((d) => d.count), 1);
+
+  // Build a full 365-day grid with gaps filled
+  const dayMap = {};
+  recent.forEach((d) => { dayMap[d.date] = d.count; });
+
+  const days = [];
+  const start = new Date(oneYearAgo);
+  // Align to Sunday
+  start.setDate(start.getDate() - start.getDay());
+  for (let d = new Date(start); d <= now; d.setDate(d.getDate() + 1)) {
+    const key = d.toISOString().split('T')[0];
+    days.push({ date: key, count: dayMap[key] || 0 });
+  }
+
+  // Group into weeks
+  const weeks = [];
+  for (let i = 0; i < days.length; i += 7) {
+    weeks.push(days.slice(i, i + 7));
+  }
+
+  const getColor = (count) => {
+    if (count === 0) return 'var(--lc-heatmap-0, rgba(255,255,255,0.06))';
+    const ratio = count / maxCount;
+    if (ratio <= 0.25) return 'var(--lc-heatmap-1, #3e2723)';
+    if (ratio <= 0.5) return 'var(--lc-heatmap-2, #e65100)';
+    if (ratio <= 0.75) return 'var(--lc-heatmap-3, #ff9800)';
+    return 'var(--lc-heatmap-4, #ffa116)';
+  };
+
+  const totalSubs = recent.reduce((s, d) => s + d.count, 0);
+
+  if (weeks.length === 0) return null;
+
+  return (
+    <div className="gh-heatmap">
+      <div className="gh-heatmap-grid">
+        {weeks.map((week, wi) => (
+          <div key={wi} className="gh-heatmap-col">
+            {week.map((day, di) => (
+              <div
+                key={di}
+                className="gh-heatmap-cell"
+                title={`${day.date}: ${day.count} submission${day.count !== 1 ? 's' : ''}`}
+                style={{ backgroundColor: getColor(day.count) }}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+      <div className="gh-heatmap-footer">
+        <span className="gh-heatmap-total">{totalSubs} submissions in the last year</span>
+        <div className="gh-heatmap-legend">
+          <span>Less</span>
+          {[0, 1, 2, 3, 4].map((l) => (
+            <div
+              key={l}
+              className="gh-heatmap-cell"
+              style={{ backgroundColor: getColor(l === 0 ? 0 : (l / 4) * maxCount) }}
+            />
+          ))}
+          <span>More</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Main Feed ───────────────────────────────── */
 export default function MainFeed({
   path,
@@ -218,13 +430,23 @@ export default function MainFeed({
   posts,
   projectCards,
   skillCategories,
-  techOrbit,
   ghStats,
   lcStats,
+  ghHeatmap,
+  lcHeatmap,
   likedPosts,
   toggleLike,
 }) {
   const [feedTab, setFeedTab] = useState('foryou');
+  const [scattered, setScattered] = useState(false);
+  const allSkills = useMemo(() => Object.values(skillCategories).flat(), [skillCategories]);
+  const scatterPositions = useMemo(() =>
+    allSkills.map((_, i) => ({
+      x: Math.cos(i * 0.9) * 120 + Math.sin(i * 2.1) * 60,
+      y: Math.sin(i * 0.7) * 80 + Math.cos(i * 1.3) * 40,
+      rotate: Math.sin(i * 1.5) * 25,
+    })),
+  [allSkills]);
 
   const headerTitle = useMemo(() => {
     switch (path) {
@@ -314,13 +536,23 @@ export default function MainFeed({
                 </div>
               </div>
 
-              {posts.map((post, i) => (
+              {/* Sort posts: pinned first, then by date descending */}
+              {[...posts]
+                .sort((a, b) => {
+                  if (a.type === 'pinned') return -1;
+                  if (b.type === 'pinned') return 1;
+                  const da = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                  const db = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                  return db - da;
+                })
+                .map((post, i) => (
                 <TweetCard
-                  key={i}
+                  key={`${post.type}-${post.createdAt || i}`}
                   post={post}
                   index={i}
                   liked={!!likedPosts[i]}
                   onToggleLike={toggleLike}
+                  avatar={ghStats?.avatar}
                 />
               ))}
             </motion.div>
@@ -468,7 +700,7 @@ export default function MainFeed({
             <div className="skills-view">
               <div className="section-intro">
                 <h3>Tech Stack</h3>
-                <p>Technologies I build with daily.</p>
+                <p>Technologies I build with daily. Click the playground to scatter!</p>
               </div>
               {Object.entries(skillCategories).map(([cat, skills], ci) => (
                 <motion.div
@@ -482,30 +714,50 @@ export default function MainFeed({
                   <h4 className="skill-category-title">{cat}</h4>
                   <div className="skill-chips">
                     {skills.map((s, si) => (
-                      <SkillChip key={s} name={s} delay={ci * 0.1 + si * 0.04} />
+                      <SkillChip key={s} name={s} icon={SKILL_ICON_MAP[s]} delay={ci * 0.1 + si * 0.04} />
                     ))}
                   </div>
                 </motion.div>
               ))}
 
-              {/* Tech Globe with orbiting icons */}
-              <div className="tech-orbit-container">
-                <h4 className="skill-category-title" style={{ marginBottom: 16 }}>
-                  🌐 Tech Globe
-                </h4>
-                <div className="orbit-canvas-wrap">
-                  <TechGlobe />
+              {/* Interactive Scatter Playground */}
+              <div className="scatter-section">
+                <div className="scatter-header">
+                  <h4 className="skill-category-title">🎯 Tech Playground</h4>
+                  <motion.button
+                    className="scatter-toggle"
+                    onClick={() => setScattered(!scattered)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {scattered ? '📐 Organize' : '💥 Scatter'}
+                  </motion.button>
                 </div>
-              </div>
-
-              {/* Tech Orbit spheres */}
-              <div className="tech-orbit-container">
-                <h4 className="skill-category-title" style={{ marginBottom: 16 }}>
-                  🌌 Tech Orbit
-                </h4>
-                <div className="orbit-canvas-wrap">
-                  <TechOrbit items={techOrbit} />
-                </div>
+                <motion.div
+                  className="scatter-pane"
+                  onClick={() => setScattered(!scattered)}
+                >
+                  {allSkills.map((skill, i) => {
+                    const iconData = SKILL_ICON_MAP[skill];
+                    const IconComp = iconData?.Icon;
+                    return (
+                      <motion.div
+                        key={skill}
+                        className="scatter-item"
+                        animate={scattered ? {
+                          x: scatterPositions[i].x,
+                          y: scatterPositions[i].y,
+                          rotate: scatterPositions[i].rotate,
+                        } : { x: 0, y: 0, rotate: 0 }}
+                        transition={{ type: 'spring', stiffness: 120, damping: 14, delay: i * 0.02 }}
+                        whileHover={{ scale: 1.1, zIndex: 10 }}
+                      >
+                        {IconComp && <IconComp size={20} color={iconData.color} />}
+                        <span>{skill}</span>
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
               </div>
             </div>
           )}
@@ -584,6 +836,14 @@ export default function MainFeed({
                   />
                   <StatCard label="Stars" value={ghStats?.stars} color="#f7b731" />
                 </div>
+
+                {/* GitHub Contribution Heatmap */}
+                {ghHeatmap && ghHeatmap.length > 0 && (
+                  <div className="gh-heatmap-section">
+                    <h4 className="gh-heatmap-title">Contribution Activity</h4>
+                    <GitHubHeatmap data={ghHeatmap} />
+                  </div>
+                )}
               </div>
 
               {/* LeetCode Stats */}
@@ -604,11 +864,40 @@ export default function MainFeed({
                     color="#ffc01e"
                   />
                   <StatCard label="Hard" value={lcStats?.hard} color="#ff375f" />
+                  {lcStats?.contestRating && (
+                    <StatCard
+                      label="Contest Rating"
+                      value={lcStats.contestRating}
+                      color="#a855f7"
+                    />
+                  )}
+                  {lcStats?.streak && (
+                    <StatCard
+                      label="Current Streak"
+                      value={`${lcStats.streak}🔥`}
+                      color="#ff6b35"
+                    />
+                  )}
+                  {lcStats?.totalActiveDays && (
+                    <StatCard
+                      label="Active Days"
+                      value={lcStats.totalActiveDays}
+                      color="#1d9bf0"
+                    />
+                  )}
                 </div>
                 {lcStats?.ranking && (
                   <p className="lc-ranking">
                     Global Ranking: <strong>#{lcStats.ranking.toLocaleString()}</strong>
                   </p>
+                )}
+
+                {/* LeetCode Submission Heatmap */}
+                {lcHeatmap && lcHeatmap.length > 0 && (
+                  <div className="gh-heatmap-section">
+                    <h4 className="gh-heatmap-title">Submission Activity</h4>
+                    <LeetCodeHeatmap data={lcHeatmap} />
+                  </div>
                 )}
               </div>
 

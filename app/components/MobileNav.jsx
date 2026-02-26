@@ -4,11 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiHome, FiHash, FiUser } from 'react-icons/fi';
 import { SiOpenai } from 'react-icons/si';
 
-export default function MobileNav({ path, navigate, onOpenGrok }) {
+export default function MobileNav({ path, navigate, onOpenAsk }) {
   const items = [
     { icon: FiHome, label: 'Home', p: '/' },
     { icon: FiHash, label: 'Explore', p: '/projects' },
-    { icon: SiOpenai, label: 'Grok', p: '/grok', action: onOpenGrok },
+    { icon: SiOpenai, label: 'Ask', p: '/grok', action: onOpenAsk },
     { icon: FiUser, label: 'Profile', p: '/profile' },
   ];
 

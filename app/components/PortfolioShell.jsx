@@ -12,7 +12,7 @@ const navItems = [
   { label: 'Explore', icon: 'explore', path: '/projects' },
   { label: 'Notifications', icon: 'bell', path: '/notifications' },
   { label: 'Chat', icon: 'chat', path: '/chat' },
-  { label: 'Grok', icon: 'grok', path: '/grok', modal: true },
+  { label: 'Ask', icon: 'grok', path: '/grok', modal: true },
   { label: 'Bookmarks', icon: 'bookmark', path: '/bookmarks' },
   { label: 'Skills', icon: 'code', path: '/skills' },
   { label: 'Profile', icon: 'user', path: '/profile' },
@@ -30,6 +30,7 @@ const starterPosts = [
     title: 'Pinned',
     text: "Hi, I'm Aditya Potdar. I build scalable web apps, AI-powered systems, and solve real-world problems through clean, efficient code.",
     tag: '#buildinpublic',
+    createdAt: '2026-02-20T10:30:00+05:30',
     replies: 42,
     reposts: 18,
     likes: 256,
@@ -40,6 +41,7 @@ const starterPosts = [
     title: 'Build Log',
     text: 'Shipped this Twitter-style portfolio with dark/light mode, Three.js tech orbit, AI chat assistant, and live GitHub + LeetCode stats. Every pixel intentional.',
     tag: '#frontend',
+    createdAt: '2026-02-24T15:45:00+05:30',
     replies: 8,
     reposts: 12,
     likes: 89,
@@ -50,6 +52,7 @@ const starterPosts = [
     title: '🧵 Problem → Solution',
     text: "Problem: Static portfolios feel dead.\nSolution: A timeline-based portfolio with live stats, trending tech cards, and conversational AI — feels alive, current, and real.",
     tag: '#productthinking',
+    createdAt: '2026-02-22T09:15:00+05:30',
     replies: 15,
     reposts: 24,
     likes: 178,
@@ -59,7 +62,9 @@ const starterPosts = [
     type: 'github',
     title: 'GitHub Activity',
     text: 'Pushed 5 commits to portfolio repo. Improved UX performance with route-level rendering and lazy-loaded Three.js scenes.',
+    image: '/github.webp',
     tag: '#github',
+    createdAt: '2026-02-25T14:30:00+05:30',
     replies: 3,
     reposts: 5,
     likes: 34,
@@ -70,6 +75,7 @@ const starterPosts = [
     title: 'LawBuddy AI',
     text: 'Built an AI legal assistant — OCR-based parsing with Google Document AI, clause interpretation with Vertex AI (Gemini), and Pinecone vector search. Top 44 accuracy at HackRx 6.0. 🚀',
     tag: '#AI #hackathon',
+    createdAt: '2026-01-15T11:00:00+05:30',
     replies: 21,
     reposts: 30,
     likes: 312,
@@ -80,6 +86,7 @@ const starterPosts = [
     title: 'Lister AI',
     text: 'Voice → categorized material list → Excel export. Whisper AI handles transcription, Gemini LLM categorizes, FastAPI + Pandas generates Excel. Zero manual effort.',
     tag: '#voiceAI #automation',
+    createdAt: '2025-12-20T16:20:00+05:30',
     replies: 6,
     reposts: 9,
     likes: 67,
@@ -90,7 +97,7 @@ const starterPosts = [
 const projectCards = [
   {
     title: 'BillMaster',
-    stack: 'MERN, Redux Toolkit, TailwindCSS',
+    stack: ['MERN', 'Redux Toolkit', 'TailwindCSS'],
     description:
       'Full-stack electrical billing and estimation platform with live editing, modular MVC backend, and synchronized bill state across sessions.',
     github: 'https://github.com/adityaa2404',
@@ -98,10 +105,12 @@ const projectCards = [
     metric: 'Reduced estimation time by 60%',
     emoji: '⚡',
     gradient: 'linear-gradient(135deg, #6366f1, #a855f7)',
+    highlights: ['Live bill editing', 'Role-based auth', 'PDF export'],
+    status: 'Production',
   },
   {
     title: 'LawBuddy AI',
-    stack: 'FastAPI, Vertex AI, Pinecone, Google Cloud',
+    stack: ['FastAPI', 'Vertex AI', 'Pinecone', 'Google Cloud'],
     description:
       'AI legal assistant for OCR parsing, risk detection, clause interpretation, and conversational Q&A on legal documents.',
     github: 'https://github.com/adityaa2404',
@@ -109,10 +118,12 @@ const projectCards = [
     metric: 'Top 44 Accuracy at HackRx 6.0',
     emoji: '⚖️',
     gradient: 'linear-gradient(135deg, #1d9bf0, #7856ff)',
+    highlights: ['OCR + Document AI', 'Vector search', 'Legal Q&A chatbot'],
+    status: 'Hackathon Winner',
   },
   {
     title: 'Lister AI',
-    stack: 'Whisper AI, Gemini LLM, React, FastAPI',
+    stack: ['Whisper AI', 'Gemini LLM', 'React', 'FastAPI'],
     description:
       'Voice-powered electrical material list generator with auto-categorization and automated Excel export.',
     github: 'https://github.com/adityaa2404',
@@ -120,6 +131,8 @@ const projectCards = [
     metric: 'Automated entire list generation workflow',
     emoji: '🎙️',
     gradient: 'linear-gradient(135deg, #f91880, #a855f7)',
+    highlights: ['Voice transcription', 'LLM categorization', 'Excel export'],
+    status: 'Production',
   },
 ];
 
@@ -152,9 +165,11 @@ const LC_RECENT_SUBMISSIONS_QUERY = `
 export default function PortfolioShell() {
   const [path, setPath] = useState('/');
   const [theme, setTheme] = useState('dark');
-  const [showGrok, setShowGrok] = useState(false);
+  const [showAsk, setShowAsk] = useState(false);
   const [ghStats, setGhStats] = useState(null);
   const [lcStats, setLcStats] = useState(null);
+  const [ghHeatmap, setGhHeatmap] = useState([]);
+  const [lcHeatmap, setLcHeatmap] = useState([]);
   const [posts, setPosts] = useState(starterPosts);
   const [likedPosts, setLikedPosts] = useState({});
 
@@ -169,6 +184,15 @@ export default function PortfolioShell() {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
+  // URL routing sync
+  useEffect(() => {
+    const url = window.location.pathname;
+    if (url !== '/') setPath(url);
+    const onPop = () => setPath(window.location.pathname);
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
   // Fetch trending — now handled inside RightSidebar itself
 
   // Fetch GitHub events + stats + LeetCode submissions
@@ -177,8 +201,8 @@ export default function PortfolioShell() {
       /* ── GitHub stats ─────────── */
       try {
         const [userRes, repoRes] = await Promise.all([
-          fetch('https://api.github.com/users/adityapotdar24'),
-          fetch('https://api.github.com/users/adityapotdar24/repos?per_page=100'),
+          fetch('https://api.github.com/users/adityaa2404'),
+          fetch('https://api.github.com/users/adityaa2404/repos?per_page=100'),
         ]);
         const user = await userRes.json();
         const repos = await repoRes.json();
@@ -195,32 +219,82 @@ export default function PortfolioShell() {
         setGhStats(null);
       }
 
+      /* ── GitHub contribution heatmap ─── */
+      try {
+        const heatRes = await fetch(
+          'https://github-contributions-api.jogruber.de/v4/adityaa2404?y=last'
+        );
+        const heatData = await heatRes.json();
+        if (heatData?.contributions) {
+          // Flatten to array of { date, count, level }
+          const flat = heatData.contributions.flatMap((week) =>
+            Array.isArray(week) ? week : []
+          );
+          setGhHeatmap(flat.length > 0 ? flat : heatData.contributions);
+        }
+      } catch {
+        setGhHeatmap([]);
+      }
+
       /* ── GitHub events → dynamic posts ─── */
       try {
-        const eventsRes = await fetch('https://api.github.com/users/adityapotdar/events?per_page=10');
+        const eventsRes = await fetch('https://api.github.com/users/adityaa2404/events?per_page=10');
         const events = await eventsRes.json();
         if (Array.isArray(events)) {
-          const ghPosts = events
+          const pushEvents = events
             .filter((e) => e.type === 'PushEvent' || e.type === 'PullRequestEvent')
-            .slice(0, 4)
-            .map((e) => {
+            .slice(0, 4);
+
+          // For PushEvents, try to get commit count via compare API
+          const ghPosts = await Promise.all(
+            pushEvents.map(async (e) => {
               if (e.type === 'PushEvent') {
-                const commits = e.payload?.commits || [];
-                const commitMsgs = commits
-                  .slice(0, 3)
-                  .map((c) => `• ${c.message}`)
-                  .join('\n');
+                const repoName = e.repo?.name || '';
+                const before = e.payload?.before;
+                const head = e.payload?.head;
+                let commitCount = e.payload?.size || 0;
+                let commitMsgs = '';
+
+                // Try compare API for actual commit details
+                if (before && head && repoName) {
+                  try {
+                    const cmpRes = await fetch(
+                      `https://api.github.com/repos/${repoName}/compare/${before}...${head}`
+                    );
+                    const cmp = await cmpRes.json();
+                    commitCount = cmp.ahead_by || cmp.total_commits || commitCount;
+                    if (Array.isArray(cmp.commits)) {
+                      commitMsgs = cmp.commits
+                        .slice(0, 3)
+                        .map((c) => `• ${c.commit?.message?.split('\n')[0] || 'commit'}`)
+                        .join('\n');
+                    }
+                  } catch {}
+                }
+
+                // Fallback if commits from payload exist
+                if (!commitMsgs && Array.isArray(e.payload?.commits) && e.payload.commits.length > 0) {
+                  commitCount = e.payload.commits.length;
+                  commitMsgs = e.payload.commits
+                    .slice(0, 3)
+                    .map((c) => `• ${c.message}`)
+                    .join('\n');
+                }
+
+                const shortRepo = repoName.split('/')[1] || repoName;
                 return {
                   type: 'github',
-                  title: `Push to ${e.repo?.name?.split('/')[1] || e.repo?.name}`,
-                  text: `Pushed ${commits.length} commit${commits.length !== 1 ? 's' : ''}:\n${commitMsgs}`,
+                  title: `Push to ${shortRepo}`,
+                  text: commitCount > 0
+                    ? `Pushed ${commitCount} commit${commitCount !== 1 ? 's' : ''}${commitMsgs ? ':\n' + commitMsgs : ''}`
+                    : `Pushed to ${shortRepo} branch ${(e.payload?.ref || '').replace('refs/heads/', '')}`,
                   image: '/github.webp',
                   tag: '#github #commits',
                   replies: Math.floor(Math.random() * 5),
                   reposts: Math.floor(Math.random() * 8),
                   likes: Math.floor(Math.random() * 40) + 5,
                   views: `${(Math.random() * 3 + 0.5).toFixed(1)}K`,
-                  timestamp: e.created_at,
+                  createdAt: e.created_at,
                 };
               }
               // PullRequestEvent
@@ -235,17 +309,13 @@ export default function PortfolioShell() {
                 reposts: Math.floor(Math.random() * 10),
                 likes: Math.floor(Math.random() * 50) + 10,
                 views: `${(Math.random() * 4 + 1).toFixed(1)}K`,
-                timestamp: e.created_at,
+                createdAt: e.created_at,
               };
-            });
+            })
+          );
 
           if (ghPosts.length > 0) {
-            setPosts((prev) => {
-              // Insert after the first 3 starter posts
-              const head = prev.slice(0, 3);
-              const tail = prev.slice(3);
-              return [...head, ...ghPosts, ...tail];
-            });
+            setPosts((prev) => [...prev, ...ghPosts]);
           }
         }
       } catch {
@@ -254,14 +324,50 @@ export default function PortfolioShell() {
 
       /* ── LeetCode stats ─────────── */
       try {
-        const lcRes = await fetch('https://alfa-leetcode-api.onrender.com/adityaapotdar');
-        const d = await lcRes.json();
+        const [lcBaseRes, lcSolvedRes, lcContestRes, lcCalRes] = await Promise.all([
+          fetch('https://alfa-leetcode-api.onrender.com/adityaapotdar'),
+          fetch('https://alfa-leetcode-api.onrender.com/adityaapotdar/solved'),
+          fetch('https://alfa-leetcode-api.onrender.com/adityaapotdar/contest'),
+          fetch('https://alfa-leetcode-api.onrender.com/adityaapotdar/calendar'),
+        ]);
+        const lcBase = await lcBaseRes.json();
+        const lcSolved = await lcSolvedRes.json();
+        let contestRating = null;
+        try {
+          const lcContest = await lcContestRes.json();
+          if (lcContest.contestRating) {
+            contestRating = Math.round(lcContest.contestRating);
+          }
+        } catch {}
+
+        let streak = null;
+        let totalActiveDays = null;
+        // Parse submission calendar for heatmap
+        try {
+          const lcCal = await lcCalRes.json();
+          streak = lcCal.streak ?? null;
+          totalActiveDays = lcCal.totalActiveDays ?? null;
+          const calStr = lcCal.submissionCalendar;
+          if (calStr) {
+            const cal = typeof calStr === 'string' ? JSON.parse(calStr) : calStr;
+            const entries = Object.entries(cal).map(([ts, count]) => ({
+              date: new Date(Number(ts) * 1000).toISOString().split('T')[0],
+              count: Number(count),
+            }));
+            entries.sort((a, b) => a.date.localeCompare(b.date));
+            setLcHeatmap(entries);
+          }
+        } catch {}
+
         setLcStats({
-          solved: d.totalSolved,
-          easy: d.easySolved,
-          medium: d.mediumSolved,
-          hard: d.hardSolved,
-          ranking: d.ranking,
+          solved: lcSolved.solvedProblem,
+          easy: lcSolved.easySolved,
+          medium: lcSolved.mediumSolved,
+          hard: lcSolved.hardSolved,
+          ranking: lcBase.ranking,
+          contestRating,
+          streak,
+          totalActiveDays,
         });
       } catch {
         setLcStats(null);
@@ -291,14 +397,10 @@ export default function PortfolioShell() {
             reposts: Math.floor(Math.random() * 6),
             likes: Math.floor(Math.random() * 30) + 5,
             views: `${(Math.random() * 2 + 0.5).toFixed(1)}K`,
-            timestamp: new Date(parseInt(sub.timestamp) * 1000).toISOString(),
+            createdAt: new Date(parseInt(sub.timestamp) * 1000).toISOString(),
           }));
 
-          setPosts((prev) => {
-            // Insert after GitHub posts / starter posts
-            const insertIdx = Math.min(prev.length, 5);
-            return [...prev.slice(0, insertIdx), ...lcPosts, ...prev.slice(insertIdx)];
-          });
+          setPosts((prev) => [...prev, ...lcPosts]);
         }
       } catch {
         // LeetCode submissions fetch failed silently
@@ -306,41 +408,12 @@ export default function PortfolioShell() {
     })();
   }, []);
 
-  // Infinite scroll
-  useEffect(() => {
-    const onScroll = () => {
-      if (path !== '/') return;
-      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300) {
-        setPosts((prev) => {
-          if (prev.length > 16) return prev;
-          return [
-            ...prev,
-            {
-              type: 'build',
-              text: `Shipped update #${prev.length + 1} — consistency is the compound interest of developer growth. Keep building. 🔥`,
-              tag: '#consistency',
-              replies: Math.floor(Math.random() * 20),
-              reposts: Math.floor(Math.random() * 15),
-              likes: Math.floor(Math.random() * 100),
-              views: `${(Math.random() * 5).toFixed(1)}K`,
-            },
-          ];
-        });
-      }
-    };
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, [path]);
-
-  const techOrbit = useMemo(
-    () => Object.values(skillCategories).flat().slice(0, 14),
-    []
-  );
+  // Infinite scroll removed — no junk posts
 
   const onNavClick = useCallback(
     (item) => {
       if (item.modal) {
-        setShowGrok(true);
+        setShowAsk(true);
         return;
       }
       if (item.path === '/chat') {
@@ -352,6 +425,7 @@ export default function PortfolioShell() {
         return;
       }
       setPath(item.path);
+      window.history.pushState({}, '', item.path);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     },
     []
@@ -383,9 +457,10 @@ export default function PortfolioShell() {
         posts={posts}
         projectCards={projectCards}
         skillCategories={skillCategories}
-        techOrbit={techOrbit}
         ghStats={ghStats}
         lcStats={lcStats}
+        ghHeatmap={ghHeatmap}
+        lcHeatmap={lcHeatmap}
         likedPosts={likedPosts}
         toggleLike={toggleLike}
       />
@@ -394,13 +469,14 @@ export default function PortfolioShell() {
         path={path}
         navigate={(p) => {
           setPath(p);
+          window.history.pushState({}, '', p);
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
-        onOpenGrok={() => setShowGrok(true)}
+        onOpenAsk={() => setShowAsk(true)}
       />
       <GrokModal
-        show={showGrok}
-        onClose={() => setShowGrok(false)}
+        show={showAsk}
+        onClose={() => setShowAsk(false)}
       />
     </div>
   );

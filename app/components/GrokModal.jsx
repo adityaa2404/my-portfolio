@@ -91,16 +91,16 @@ export default function GrokModal({ show, onClose }) {
           {/* Modal */}
           <motion.div
             className="grok-modal"
-            initial={{ opacity: 0, scale: 0.92, y: 40 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.92, y: 40 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           >
             {/* Header */}
             <div className="grok-header">
               <div className="grok-header-left">
                 <span className="grok-logo">✦</span>
-                <span className="grok-title">Grok</span>
+                <span className="grok-title">Ask</span>
                 <span className="grok-subtitle">Ask about Aditya</span>
               </div>
               <button className="grok-close" onClick={onClose}>
@@ -195,7 +195,7 @@ export default function GrokModal({ show, onClose }) {
               <input
                 ref={inputRef}
                 type="text"
-                placeholder="Ask Grok about Aditya..."
+                placeholder="Ask anything about Aditya..."
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 onKeyDown={handleKey}
