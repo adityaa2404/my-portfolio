@@ -124,12 +124,10 @@ const projectCards = [
 ];
 
 const skillCategories = {
-  Languages: ['C++', 'Java', 'Python', 'JavaScript', 'TypeScript'],
-  Frameworks: ['React', 'Next.js', 'Node.js', 'Express', 'FastAPI'],
-  Libraries: ['Redux', 'Tailwind CSS', 'Framer Motion', 'Three.js'],
-  Databases: ['MongoDB', 'PostgreSQL', 'MySQL'],
-  Services: ['Firebase', 'Supabase', 'AWS', 'Vercel', 'Google Cloud'],
-  'Dev Tools': ['Git', 'GitHub', 'Docker', 'Postman', 'VS Code'],
+  Languages: ['JavaScript', 'TypeScript', 'C', 'C++', 'Java', 'Python', 'HTML', 'CSS'],
+  'Frameworks & Libraries': ['React', 'Next.js', 'Express.js', 'Node.js', 'Tailwind CSS', 'Spring Boot'],
+  'Databases & Services': ['MongoDB', 'PostgreSQL', 'MySQL', 'Supabase', 'Firebase', 'Prisma'],
+  'Developer Tools': ['Git', 'GitHub', 'VS Code', 'IntelliJ IDEA', 'Vercel', 'Postman', 'Docker'],
 };
 
 const interestBlocks = [
@@ -138,15 +136,23 @@ const interestBlocks = [
   { name: '🏍 Bikes', headline: 'Adventure touring segment sees new launches' },
 ];
 
+/* ── LeetCode GraphQL query ─────────────────── */
+const LC_RECENT_SUBMISSIONS_QUERY = `
+  query recentAcSubmissions($username: String!, $limit: Int!) {
+    recentAcSubmissionList(username: $username, limit: $limit) {
+      title
+      titleSlug
+      timestamp
+      lang
+      statusDisplay
+    }
+  }
+`;
+
 export default function PortfolioShell() {
   const [path, setPath] = useState('/');
   const [theme, setTheme] = useState('dark');
   const [showGrok, setShowGrok] = useState(false);
-  const [chatInput, setChatInput] = useState('');
-  const [messages, setMessages] = useState([
-    { role: 'bot', text: 'Ask anything about Aditya Potdar.' },
-  ]);
-  const [trending, setTrending] = useState([]);
   const [ghStats, setGhStats] = useState(null);
   const [lcStats, setLcStats] = useState(null);
   const [posts, setPosts] = useState(starterPosts);
@@ -163,27 +169,12 @@ export default function PortfolioShell() {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  // Fetch trending
-  useEffect(() => {
-    const fetchTrending = async () => {
-      try {
-        const res = await fetch(
-          'https://hn.algolia.com/api/v1/search?query=AI%20JavaScript%20Open%20Source&tags=story'
-        );
-        const data = await res.json();
-        setTrending(data.hits.slice(0, 5));
-      } catch {
-        setTrending([]);
-      }
-    };
-    fetchTrending();
-    const interval = setInterval(fetchTrending, 6 * 60 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []);
+  // Fetch trending — now handled inside RightSidebar itself
 
-  // Fetch GitHub + LeetCode
+  // Fetch GitHub events + stats + LeetCode submissions
   useEffect(() => {
     (async () => {
+      /* ── GitHub stats ─────────── */
       try {
         const [userRes, repoRes] = await Promise.all([
           fetch('https://api.github.com/users/adityapotdar24'),
@@ -204,8 +195,66 @@ export default function PortfolioShell() {
         setGhStats(null);
       }
 
+      /* ── GitHub events → dynamic posts ─── */
       try {
-        const lcRes = await fetch('https://alfa-leetcode-api.onrender.com/aaditya2404');
+        const eventsRes = await fetch('https://api.github.com/users/adityapotdar/events?per_page=10');
+        const events = await eventsRes.json();
+        if (Array.isArray(events)) {
+          const ghPosts = events
+            .filter((e) => e.type === 'PushEvent' || e.type === 'PullRequestEvent')
+            .slice(0, 4)
+            .map((e) => {
+              if (e.type === 'PushEvent') {
+                const commits = e.payload?.commits || [];
+                const commitMsgs = commits
+                  .slice(0, 3)
+                  .map((c) => `• ${c.message}`)
+                  .join('\n');
+                return {
+                  type: 'github',
+                  title: `Push to ${e.repo?.name?.split('/')[1] || e.repo?.name}`,
+                  text: `Pushed ${commits.length} commit${commits.length !== 1 ? 's' : ''}:\n${commitMsgs}`,
+                  image: '/github.webp',
+                  tag: '#github #commits',
+                  replies: Math.floor(Math.random() * 5),
+                  reposts: Math.floor(Math.random() * 8),
+                  likes: Math.floor(Math.random() * 40) + 5,
+                  views: `${(Math.random() * 3 + 0.5).toFixed(1)}K`,
+                  timestamp: e.created_at,
+                };
+              }
+              // PullRequestEvent
+              const pr = e.payload?.pull_request;
+              return {
+                type: 'github',
+                title: `PR ${e.payload?.action}: ${pr?.title || 'Pull Request'}`,
+                text: `${e.payload?.action === 'opened' ? 'Opened' : 'Updated'} PR in ${e.repo?.name?.split('/')[1] || e.repo?.name}${pr?.body ? `: ${pr.body.slice(0, 120)}` : ''}`,
+                image: '/github.webp',
+                tag: '#github #pullrequest',
+                replies: Math.floor(Math.random() * 8),
+                reposts: Math.floor(Math.random() * 10),
+                likes: Math.floor(Math.random() * 50) + 10,
+                views: `${(Math.random() * 4 + 1).toFixed(1)}K`,
+                timestamp: e.created_at,
+              };
+            });
+
+          if (ghPosts.length > 0) {
+            setPosts((prev) => {
+              // Insert after the first 3 starter posts
+              const head = prev.slice(0, 3);
+              const tail = prev.slice(3);
+              return [...head, ...ghPosts, ...tail];
+            });
+          }
+        }
+      } catch {
+        // GitHub events fetch failed silently
+      }
+
+      /* ── LeetCode stats ─────────── */
+      try {
+        const lcRes = await fetch('https://alfa-leetcode-api.onrender.com/adityaapotdar');
         const d = await lcRes.json();
         setLcStats({
           solved: d.totalSolved,
@@ -216,6 +265,43 @@ export default function PortfolioShell() {
         });
       } catch {
         setLcStats(null);
+      }
+
+      /* ── LeetCode recent submissions → dynamic posts ─── */
+      try {
+        const lcSubRes = await fetch('/api/leetcode', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: LC_RECENT_SUBMISSIONS_QUERY,
+            variables: { username: 'adityaapotdar', limit: 5 },
+          }),
+        });
+        const lcSubData = await lcSubRes.json();
+        const submissions = lcSubData?.data?.recentAcSubmissionList || [];
+
+        if (submissions.length > 0) {
+          const lcPosts = submissions.slice(0, 3).map((sub) => ({
+            type: 'leetcode',
+            title: `Solved: ${sub.title}`,
+            text: `Aditya just submitted "${sub.title}" on LeetCode in ${sub.lang}. Keep grinding! 🧠`,
+            image: '/leetcode.png',
+            tag: '#leetcode #dsa',
+            replies: Math.floor(Math.random() * 5),
+            reposts: Math.floor(Math.random() * 6),
+            likes: Math.floor(Math.random() * 30) + 5,
+            views: `${(Math.random() * 2 + 0.5).toFixed(1)}K`,
+            timestamp: new Date(parseInt(sub.timestamp) * 1000).toISOString(),
+          }));
+
+          setPosts((prev) => {
+            // Insert after GitHub posts / starter posts
+            const insertIdx = Math.min(prev.length, 5);
+            return [...prev.slice(0, insertIdx), ...lcPosts, ...prev.slice(insertIdx)];
+          });
+        }
+      } catch {
+        // LeetCode submissions fetch failed silently
       }
     })();
   }, []);
@@ -282,48 +368,6 @@ export default function PortfolioShell() {
     );
   }, [likedPosts]);
 
-  const sendMessage = useCallback(() => {
-    if (!chatInput.trim()) return;
-    const normalized = chatInput.toLowerCase();
-    const next = [...messages, { role: 'user', text: chatInput }];
-
-    if (/(connect|reach|contact|hire|mail|whatsapp|phone|call).*(aditya)?/.test(normalized)) {
-      next.push({
-        role: 'bot',
-        text: "Here's how to reach Aditya:",
-        quickActions: true,
-      });
-    } else if (/(skill|tech|stack|know|language|framework)/.test(normalized)) {
-      next.push({
-        role: 'bot',
-        text: 'Aditya works with C++, JavaScript, Python, React, Next.js, Node.js, Express, MongoDB, and more. He has solved 400+ DSA problems and is proficient in the MERN stack.',
-      });
-    } else if (/(project|build|ship|work)/.test(normalized)) {
-      next.push({
-        role: 'bot',
-        text: 'Key projects: BillMaster (MERN billing platform), LawBuddy AI (legal document assistant with Vertex AI), and Lister AI (voice-powered material list generator). Check the Explore tab for more!',
-      });
-    } else if (/(education|college|study|cgpa|degree)/.test(normalized)) {
-      next.push({
-        role: 'bot',
-        text: 'Aditya is pursuing B.E. in Electronics & Computer Engineering at PICT, Pune (2023–2027) with a CGPA of 9.73/10.',
-      });
-    } else if (/(who|about|intro|tell)/.test(normalized)) {
-      next.push({
-        role: 'bot',
-        text: 'Aditya Potdar is a third-year engineering student at PICT Pune, focused on full-stack development, AI systems, and competitive programming. He builds scalable web apps, AI-powered tools, and solves 400+ DSA problems.',
-      });
-    } else {
-      next.push({
-        role: 'bot',
-        text: 'Aditya is focused on building scalable web applications, AI-powered products, and problem-solving systems. Ask about his skills, projects, education, or how to connect!',
-      });
-    }
-
-    setMessages(next);
-    setChatInput('');
-  }, [chatInput, messages]);
-
   return (
     <div className="app-shell">
       <LeftSidebar
@@ -345,7 +389,7 @@ export default function PortfolioShell() {
         likedPosts={likedPosts}
         toggleLike={toggleLike}
       />
-      <RightSidebar trending={trending} interestBlocks={interestBlocks} />
+      <RightSidebar />
       <MobileNav
         path={path}
         navigate={(p) => {
@@ -356,10 +400,6 @@ export default function PortfolioShell() {
       />
       <GrokModal
         show={showGrok}
-        messages={messages}
-        chatInput={chatInput}
-        setChatInput={setChatInput}
-        sendMessage={sendMessage}
         onClose={() => setShowGrok(false)}
       />
     </div>

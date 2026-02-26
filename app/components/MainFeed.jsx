@@ -21,6 +21,7 @@ import { useMemo, useState } from 'react';
 
 const TechOrbit = dynamic(() => import('./TechOrbit'), { ssr: false });
 const Globe = dynamic(() => import('./Globe'), { ssr: false });
+const TechGlobe = dynamic(() => import('./TechGlobe'), { ssr: false });
 
 /* ── animation variants ─────────────────────── */
 const fadeUp = {
@@ -39,7 +40,16 @@ function TweetCard({ post, index, liked, onToggleLike }) {
       ? '🧵'
       : post.type === 'github'
       ? '🐙'
+      : post.type === 'leetcode'
+      ? '🧠'
       : '🔧';
+
+  const avatarImage =
+    post.type === 'github'
+      ? '/github.webp'
+      : post.type === 'leetcode'
+      ? '/leetcode.png'
+      : null;
 
   return (
     <motion.article
@@ -58,7 +68,21 @@ function TweetCard({ post, index, liked, onToggleLike }) {
       )}
       <div className="tweet-body">
         <div className="tweet-avatar-col">
-          <div className="tweet-avatar">{typeEmoji}</div>
+          {avatarImage ? (
+            <img
+              src={avatarImage}
+              alt={post.type}
+              className="tweet-avatar-img-icon"
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: '50%',
+                objectFit: 'cover',
+              }}
+            />
+          ) : (
+            <div className="tweet-avatar">{typeEmoji}</div>
+          )}
         </div>
         <div className="tweet-content-col">
           <div className="tweet-header">
@@ -70,6 +94,22 @@ function TweetCard({ post, index, liked, onToggleLike }) {
             </span>
           </div>
           <p className="tweet-text">{post.text}</p>
+          {/* Post image for github/leetcode posts */}
+          {post.image && (
+            <div className="tweet-image" style={{ marginTop: 10, marginBottom: 6 }}>
+              <img
+                src={post.image}
+                alt={post.type}
+                style={{
+                  width: '100%',
+                  maxHeight: 220,
+                  objectFit: 'cover',
+                  borderRadius: 12,
+                  border: '1px solid var(--border, rgba(255,255,255,0.08))',
+                }}
+              />
+            </div>
+          )}
           {post.tag && <span className="tweet-tag">{post.tag}</span>}
           <div className="tweet-actions">
             <button className="tweet-action" title="Reply">
@@ -447,6 +487,18 @@ export default function MainFeed({
                   </div>
                 </motion.div>
               ))}
+
+              {/* Tech Globe with orbiting icons */}
+              <div className="tech-orbit-container">
+                <h4 className="skill-category-title" style={{ marginBottom: 16 }}>
+                  🌐 Tech Globe
+                </h4>
+                <div className="orbit-canvas-wrap">
+                  <TechGlobe />
+                </div>
+              </div>
+
+              {/* Tech Orbit spheres */}
               <div className="tech-orbit-container">
                 <h4 className="skill-category-title" style={{ marginBottom: 16 }}>
                   🌌 Tech Orbit

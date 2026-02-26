@@ -3,28 +3,71 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiX, FiSend, FiPhone, FiMail } from 'react-icons/fi';
 import { SiWhatsapp } from 'react-icons/si';
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 
-export default function GrokModal({
-  show,
-  messages,
-  chatInput,
-  setChatInput,
-  sendMessage,
-  onClose,
-}) {
+export default function GrokModal({ show, onClose }) {
   const endRef = useRef(null);
   const inputRef = useRef(null);
+  const [chatInput, setChatInput] = useState('');
+  const [messages, setMessages] = useState([
+    { role: 'bot', text: 'Ask anything about Aditya Potdar — skills, projects, education, or how to connect!' },
+  ]);
+  const [isTyping, setIsTyping] = useState(false);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, isTyping]);
 
   useEffect(() => {
     if (show) {
       setTimeout(() => inputRef.current?.focus(), 200);
     }
   }, [show]);
+
+  const sendMessage = useCallback(async (overrideText) => {
+    const text = (overrideText || chatInput).trim();
+    if (!text) return;
+
+    const userMsg = { role: 'user', text };
+    const updatedMessages = [...messages, userMsg];
+    setMessages(updatedMessages);
+    setChatInput('');
+    setIsTyping(true);
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: updatedMessages.filter((m) => m.role === 'user' || m.role === 'bot').map((m) => ({
+            role: m.role === 'bot' ? 'model' : 'user',
+            text: m.text,
+          })),
+        }),
+      });
+
+      const data = await res.json();
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'bot',
+          text: data.reply || "Sorry, I couldn't generate a response.",
+          quickActions: data.quickActions || false,
+        },
+      ]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'bot',
+          text: "I'm having trouble connecting right now. You can reach Aditya at adityapotdar2404@gmail.com or WhatsApp +91 7745060502.",
+          quickActions: true,
+        },
+      ]);
+    } finally {
+      setIsTyping(false);
+    }
+  }, [chatInput, messages]);
 
   const handleKey = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -105,11 +148,27 @@ export default function GrokModal({
                   </div>
                 </motion.div>
               ))}
+              {isTyping && (
+                <motion.div
+                  className="grok-msg bot"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <span className="grok-msg-icon">✦</span>
+                  <div className="grok-msg-content">
+                    <p className="typing-indicator">
+                      <span className="dot" />
+                      <span className="dot" />
+                      <span className="dot" />
+                    </p>
+                  </div>
+                </motion.div>
+              )}
               <div ref={endRef} />
             </div>
 
             {/* Suggested prompts */}
-            {messages.length <= 2 && (
+            {messages.length <= 2 && !isTyping && (
               <div className="grok-suggestions">
                 {[
                   'What are his skills?',
@@ -123,10 +182,7 @@ export default function GrokModal({
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 + i * 0.08 }}
-                    onClick={() => {
-                      setChatInput(q);
-                      setTimeout(sendMessage, 50);
-                    }}
+                    onClick={() => sendMessage(q)}
                   >
                     {q}
                   </motion.button>
@@ -143,8 +199,9 @@ export default function GrokModal({
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 onKeyDown={handleKey}
+                disabled={isTyping}
               />
-              <button className="grok-send" onClick={sendMessage}>
+              <button className="grok-send" onClick={() => sendMessage()} disabled={isTyping}>
                 <FiSend size={18} />
               </button>
             </div>

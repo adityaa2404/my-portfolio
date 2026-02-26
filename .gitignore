@@ -1,24 +1,66 @@
-# Logs
-logs
-*.log
+# Dependencies
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
+.pnpm-store/
 
-node_modules
-dist
-dist-ssr
-*.local
+# Next.js build output
+.next/
+out/
+build/
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# Production build
+dist/
+
+# Debug logs
+logs/
+*.log
+*.error
+*.trace
+
+# Local env files
+.env
+.env.local
+.env.development.local
+.env.production.local
+.env.test.local
+
+# OS / system files
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+Thumbs.db
+
+# VSCode / JetBrains
+.vscode/
+.idea/
+
+# TypeScript
+*.tsbuildinfo
+
+# Cache folders
+.cache/
+.next/cache/
+*.cache
+
+# Vercel
+.vercel/
+
+# Static exports
+export/
+
+# Svelte / SWC
+.svelte-kit/
+.svgr-cache/
+
+# Optional: ignore all generated images if using next/image
+public/generated/
+
+# Windows trash
+$RECYCLE.BIN/
+
+# Misc
+*.pid
+*.seed
+*.tgz
+.pnpm-debug.log

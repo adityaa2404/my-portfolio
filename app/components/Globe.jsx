@@ -5,7 +5,7 @@ import { Sphere, OrbitControls } from '@react-three/drei';
 import { useRef, useMemo } from 'react';
 import * as THREE from 'three';
 
-/* Wireframe globe with India highlight and Pune pin */
+/* Wireframe globe with India highlight and Pune pin (Profile only) */
 
 function WireframeGlobe() {
   const globeRef = useRef();
