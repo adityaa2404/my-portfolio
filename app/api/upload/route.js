@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import path from 'path';
+import { v2 as cloudinary } from 'cloudinary';
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function POST(req) {
   try {
@@ -19,14 +24,17 @@ export async function POST(req) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Sanitize filename + add timestamp
-    const ext = path.extname(file.name) || '.png';
-    const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`;
-    const uploadPath = path.join(process.cwd(), 'public', 'uploads', safeName);
+    // Upload to Cloudinary as base64 data URI
+    const base64 = buffer.toString('base64');
+    const mime = file.type || 'image/png';
+    const dataUri = `data:${mime};base64,${base64}`;
 
-    await writeFile(uploadPath, buffer);
+    const result = await cloudinary.uploader.upload(dataUri, {
+      folder: 'portfolio',
+      resource_type: 'auto',
+    });
 
-    return NextResponse.json({ url: `/uploads/${safeName}` });
+    return NextResponse.json({ url: result.secure_url });
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
