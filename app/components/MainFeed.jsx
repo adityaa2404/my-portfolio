@@ -18,14 +18,14 @@ import {
 import {
   SiLeetcode,
   SiJavascript, SiTypescript, SiPython, SiHtml5, SiCss3,
-  SiReact, SiNextdotjs, SiExpress, SiNodedotjs, SiTailwindcss, SiSpringboot,
+  SiReact, SiNextdotjs, SiExpress, SiNodedotjs, SiTailwindcss,
   SiMongodb, SiPostgresql, SiMysql, SiSupabase, SiFirebase, SiPrisma,
   SiGit, SiGithub, SiVscodium, SiIntellijidea, SiVercel, SiPostman, SiDocker,
   SiCplusplus, SiC,
 } from 'react-icons/si';
 import { FaJava } from 'react-icons/fa';
 import dynamic from 'next/dynamic';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 
 const Globe = dynamic(() => import('./Globe'), { ssr: false });
 
@@ -64,7 +64,6 @@ const SKILL_ICON_MAP = {
   'Express.js': { Icon: SiExpress, color: '#ffffff' },
   'Node.js': { Icon: SiNodedotjs, color: '#5FA04E' },
   'Tailwind CSS': { Icon: SiTailwindcss, color: '#06B6D4' },
-  'Spring Boot': { Icon: SiSpringboot, color: '#6DB33F' },
   'MongoDB': { Icon: SiMongodb, color: '#47A248' },
   'PostgreSQL': { Icon: SiPostgresql, color: '#4169E1' },
   'MySQL': { Icon: SiMysql, color: '#4479A1' },
@@ -294,6 +293,107 @@ function SkillChip({ name, icon, delay }) {
   );
 }
 
+/* ── Floating Skills ────────────────────────── */
+function FloatingSkills({ skills, iconMap }) {
+  const containerRef = useRef(null);
+  const [paused, setPaused] = useState(false);
+  const [positions, setPositions] = useState([]);
+  const animFrame = useRef(null);
+  const particlesRef = useRef([]);
+
+  // Initialize random positions + velocities once
+  useEffect(() => {
+    const count = skills.length;
+    const particles = skills.map((_, i) => {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 0.3 + Math.random() * 0.5;
+      return {
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        size: 36 + Math.random() * 16,
+      };
+    });
+    particlesRef.current = particles;
+    setPositions(particles.map(p => ({ x: p.x, y: p.y, size: p.size })));
+  }, [skills]);
+
+  // Animation loop
+  useEffect(() => {
+    let lastTime = performance.now();
+
+    const animate = (now) => {
+      const dt = Math.min((now - lastTime) / 16, 3); // Normalize to ~60fps, cap at 3x
+      lastTime = now;
+
+      if (!paused) {
+        const particles = particlesRef.current;
+        const next = particles.map(p => {
+          let nx = p.x + p.vx * dt;
+          let ny = p.y + p.vy * dt;
+
+          // Bounce off edges
+          if (nx < 0 || nx > 95) { p.vx *= -1; nx = Math.max(0, Math.min(95, nx)); }
+          if (ny < 0 || ny > 90) { p.vy *= -1; ny = Math.max(0, Math.min(90, ny)); }
+
+          p.x = nx;
+          p.y = ny;
+          return { x: nx, y: ny, size: p.size };
+        });
+        setPositions([...next]);
+      }
+
+      animFrame.current = requestAnimationFrame(animate);
+    };
+
+    animFrame.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animFrame.current);
+  }, [paused]);
+
+  return (
+    <div
+      ref={containerRef}
+      className="floating-skills-container"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onTouchStart={() => setPaused(true)}
+      onTouchEnd={() => setPaused(false)}
+    >
+      {skills.map((skill, i) => {
+        const iconData = iconMap[skill];
+        const IconComp = iconData?.Icon;
+        const pos = positions[i];
+        if (!pos) return null;
+
+        return (
+          <div
+            key={skill}
+            className="floating-skill-item"
+            style={{
+              left: `${pos.x}%`,
+              top: `${pos.y}%`,
+              width: pos.size + 'px',
+              height: pos.size + 'px',
+              transition: paused ? 'transform 0.3s ease, box-shadow 0.3s ease' : 'none',
+            }}
+            title={skill}
+          >
+            {IconComp && <IconComp size={pos.size * 0.45} color={iconData.color} />}
+          </div>
+        );
+      })}
+
+      {/* Skill name tooltip on hover */}
+      {paused && (
+        <div className="floating-skills-hint">
+          Hover over an icon to see the skill
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── Stats Card ─────────────────────────────── */
 function StatCard({ label, value, sub, color }) {
   return (
@@ -455,6 +555,173 @@ function LeetCodeHeatmap({ data }) {
   );
 }
 
+/* ── Notifications View ──────────────────────── */
+function NotificationsView({ posts, lcStats, ghStats }) {
+  const [notifTab, setNotifTab] = useState('all');
+
+  const notifications = useMemo(() => {
+    const items = [];
+
+    // Dynamic: generate from recent posts in DB
+    if (Array.isArray(posts)) {
+      posts.forEach((p) => {
+        if (p.source === 'github' || p.type === 'github') {
+          items.push({
+            id: `gh-${p._id}`,
+            type: 'activity',
+            icon: '💻',
+            accent: 'var(--notif-gh)',
+            text: (
+              <>
+                <strong>GitHub</strong> — {p.title}
+                {p.text && <span className="notif-sub">{p.text.split('\n')[0].slice(0, 80)}</span>}
+              </>
+            ),
+            time: p.createdAt,
+          });
+        } else if (p.source === 'leetcode' || p.type === 'leetcode') {
+          items.push({
+            id: `lc-${p._id}`,
+            type: 'activity',
+            icon: '🧠',
+            accent: 'var(--notif-lc)',
+            text: (
+              <>
+                <strong>LeetCode</strong> — {p.title}
+              </>
+            ),
+            time: p.createdAt,
+          });
+        }
+      });
+    }
+
+    // Static milestones (always shown)
+    const milestones = [
+      {
+        id: 'ms-1',
+        type: 'milestone',
+        icon: '🎯',
+        accent: 'var(--notif-pink)',
+        text: (<><strong>HackRx 6.0</strong> — LawBuddy AI achieved Top 44 accuracy ranking</>),
+        time: '2024-12-01',
+      },
+      {
+        id: 'ms-2',
+        type: 'milestone',
+        icon: '⭐',
+        accent: 'var(--notif-purple)',
+        text: (<><strong>PICT Semester</strong> — Achieved CGPA 9.73/10</>),
+        time: '2024-06-01',
+      },
+      {
+        id: 'ms-3',
+        type: 'milestone',
+        icon: '🏆',
+        accent: 'var(--notif-lc)',
+        text: (<><strong>LeetCode</strong> — Crossed {lcStats?.solved || '400'}+ problems solved</>),
+        time: '2024-09-01',
+      },
+      {
+        id: 'ms-4',
+        type: 'milestone',
+        icon: '🚀',
+        accent: 'var(--notif-blue)',
+        text: (<><strong>BillMaster</strong> — Deployed to production, 60% faster estimation</>),
+        time: '2024-08-01',
+      },
+      {
+        id: 'ms-5',
+        type: 'milestone',
+        icon: '🎓',
+        accent: 'var(--notif-green)',
+        text: (<><strong>PICT, Pune</strong> — Enrolled in B.E. Electronics & Telecom</>),
+        time: '2023-08-01',
+      },
+      {
+        id: 'ms-6',
+        type: 'milestone',
+        icon: '🌟',
+        accent: 'var(--notif-purple)',
+        text: (<><strong>Portfolio</strong> — Launched this X-style developer portfolio</>),
+        time: '2026-02-22',
+      },
+    ];
+
+    items.push(...milestones);
+
+    // Sort newest first
+    items.sort((a, b) => new Date(b.time) - new Date(a.time));
+    return items;
+  }, [posts, lcStats, ghStats]);
+
+  const filtered = useMemo(() => {
+    if (notifTab === 'all') return notifications;
+    return notifications.filter((n) => n.type === notifTab);
+  }, [notifications, notifTab]);
+
+  const formatTime = (t) => {
+    const d = new Date(t);
+    if (isNaN(d.getTime())) return t;
+    const now = new Date();
+    const diff = now - d;
+    if (diff < 60000) return 'just now';
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+    if (diff < 604800000) return `${Math.floor(diff / 86400000)}d ago`;
+    return d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: d.getFullYear() !== now.getFullYear() ? 'numeric' : undefined });
+  };
+
+  return (
+    <div className="notifications-view">
+      {/* Notification tabs */}
+      <div className="notif-tabs">
+        {[
+          { key: 'all', label: 'All' },
+          { key: 'activity', label: 'Activity' },
+          { key: 'milestone', label: 'Milestones' },
+        ].map((tab) => (
+          <button
+            key={tab.key}
+            className={`notif-tab ${notifTab === tab.key ? 'active' : ''}`}
+            onClick={() => setNotifTab(tab.key)}
+          >
+            {tab.label}
+            {tab.key === 'all' && (
+              <span className="notif-tab-count">{notifications.length}</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Notification list */}
+      {filtered.length > 0 ? (
+        filtered.map((notif, i) => (
+          <motion.div
+            className="notification-item"
+            key={notif.id}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.04, duration: 0.25 }}
+          >
+            <div className="notif-accent-line" style={{ backgroundColor: notif.accent }} />
+            <span className="notif-icon">{notif.icon}</span>
+            <div className="notif-content">
+              <p>{notif.text}</p>
+              <span className="notif-time">{formatTime(notif.time)}</span>
+            </div>
+          </motion.div>
+        ))
+      ) : (
+        <div className="notif-empty">
+          <span className="notif-empty-icon">🔔</span>
+          <p>No notifications in this category yet.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── Main Feed ───────────────────────────────── */
 export default function MainFeed({
   path,
@@ -472,15 +739,6 @@ export default function MainFeed({
   loading,
 }) {
   const [feedTab, setFeedTab] = useState('foryou');
-  const [scattered, setScattered] = useState(false);
-  const allSkills = useMemo(() => Object.values(skillCategories).flat(), [skillCategories]);
-  const scatterPositions = useMemo(() =>
-    allSkills.map((_, i) => ({
-      x: Math.cos(i * 0.9) * 120 + Math.sin(i * 2.1) * 60,
-      y: Math.sin(i * 0.7) * 80 + Math.cos(i * 1.3) * 40,
-      rotate: Math.sin(i * 1.5) * 25,
-    })),
-  [allSkills]);
 
   const headerTitle = useMemo(() => {
     switch (path) {
@@ -613,72 +871,7 @@ export default function MainFeed({
 
           {/* NOTIFICATIONS */}
           {path === '/notifications' && (
-            <div className="notifications-view">
-              {[
-                {
-                  icon: '🎯',
-                  text: (
-                    <>
-                      <strong>HackRx 6.0</strong> — LawBuddy AI achieved Top 44
-                      accuracy ranking
-                    </>
-                  ),
-                  time: '2024',
-                },
-                {
-                  icon: '⭐',
-                  text: (
-                    <>
-                      <strong>PICT Semester</strong> — Achieved CGPA 9.73/10
-                    </>
-                  ),
-                  time: '2024',
-                },
-                {
-                  icon: '🏆',
-                  text: (
-                    <>
-                      <strong>LeetCode</strong> — Crossed {lcStats?.solved || '400'}+ problems
-                      solved
-                    </>
-                  ),
-                  time: '2024',
-                },
-                {
-                  icon: '🚀',
-                  text: (
-                    <>
-                      <strong>BillMaster</strong> — Reduced estimation time by 60%
-                    </>
-                  ),
-                  time: '2024',
-                },
-                {
-                  icon: '🎓',
-                  text: (
-                    <>
-                      <strong>PICT, Pune</strong> — Enrolled in B.E. E&CE
-                    </>
-                  ),
-                  time: '2023',
-                },
-              ].map((notif, i) => (
-                <motion.div
-                  className="notification-item"
-                  key={i}
-                  variants={fadeUp}
-                  initial="initial"
-                  animate="animate"
-                  transition={{ delay: i * 0.08 }}
-                >
-                  <span className="notif-icon">{notif.icon}</span>
-                  <div className="notif-content">
-                    <p>{notif.text}</p>
-                    <span className="notif-time">{notif.time}</span>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+            <NotificationsView posts={posts} lcStats={lcStats} ghStats={ghStats} />
           )}
 
           {/* BOOKMARKS */}
@@ -738,7 +931,7 @@ export default function MainFeed({
             <div className="skills-view">
               <div className="section-intro">
                 <h3>Tech Stack</h3>
-                <p>Technologies I build with daily. Click the playground to scatter!</p>
+                <p>Technologies I build with daily.</p>
               </div>
               {Object.entries(skillCategories).map(([cat, skills], ci) => (
                 <motion.div
@@ -758,44 +951,10 @@ export default function MainFeed({
                 </motion.div>
               ))}
 
-              {/* Interactive Scatter Playground */}
-              <div className="scatter-section">
-                <div className="scatter-header">
-                  <h4 className="skill-category-title">🎯 Tech Playground</h4>
-                  <motion.button
-                    className="scatter-toggle"
-                    onClick={() => setScattered(!scattered)}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {scattered ? '📐 Organize' : '💥 Scatter'}
-                  </motion.button>
-                </div>
-                <motion.div
-                  className="scatter-pane"
-                  onClick={() => setScattered(!scattered)}
-                >
-                  {allSkills.map((skill, i) => {
-                    const iconData = SKILL_ICON_MAP[skill];
-                    const IconComp = iconData?.Icon;
-                    return (
-                      <motion.div
-                        key={skill}
-                        className="scatter-item"
-                        animate={scattered ? {
-                          x: scatterPositions[i].x,
-                          y: scatterPositions[i].y,
-                          rotate: scatterPositions[i].rotate,
-                        } : { x: 0, y: 0, rotate: 0 }}
-                        transition={{ type: 'spring', stiffness: 120, damping: 14, delay: i * 0.02 }}
-                        whileHover={{ scale: 1.1, zIndex: 10 }}
-                      >
-                        {IconComp && <IconComp size={20} color={iconData.color} />}
-                        <span>{skill}</span>
-                      </motion.div>
-                    );
-                  })}
-                </motion.div>
+              {/* Floating Playground */}
+              <div className="floating-section">
+                <h4 className="skill-category-title">🎯 Tech Playground</h4>
+                <FloatingSkills skills={Object.values(skillCategories).flat()} iconMap={SKILL_ICON_MAP} />
               </div>
             </div>
           )}

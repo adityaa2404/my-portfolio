@@ -2,8 +2,8 @@ const FEEDS = {
   tech: 'https://feeds.feedburner.com/TechCrunch/',
   cricket: 'https://www.espncricinfo.com/rss/content/story/feeds/0.xml',
   smartphones: 'https://www.gsmarena.com/rss-news-reviews.php3',
-  cars: 'https://www.autoblog.com/rss.xml',
-  bikes: 'https://www.bikedekho.com/news/rss.xml',
+  cars: 'https://www.autocarindia.com/RSS/rss.ashx',
+  bikes: 'https://www.rushlane.com/feed',
 };
 
 /* Minimal RSS XML parser — extracts <item> title + link */

@@ -70,7 +70,7 @@ const projectCards = [
 
 const skillCategories = {
   Languages: ['JavaScript', 'TypeScript', 'C', 'C++', 'Java', 'Python', 'HTML', 'CSS'],
-  'Frameworks & Libraries': ['React', 'Next.js', 'Express.js', 'Node.js', 'Tailwind CSS', 'Spring Boot'],
+  'Frameworks & Libraries': ['React', 'Next.js', 'Express.js', 'Node.js', 'Tailwind CSS'],
   'Databases & Services': ['MongoDB', 'PostgreSQL', 'MySQL', 'Supabase', 'Firebase', 'Prisma'],
   'Developer Tools': ['Git', 'GitHub', 'VS Code', 'IntelliJ IDEA', 'Vercel', 'Postman', 'Docker'],
 };
@@ -198,6 +198,7 @@ export default function PortfolioShell() {
         path={path}
         onNavClick={onNavClick}
         avatar={ghStats?.avatar}
+        notifCount={posts.filter(p => p.source === 'github' || p.source === 'leetcode').length}
       />
       <MainFeed
         path={path}

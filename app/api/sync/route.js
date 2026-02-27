@@ -5,6 +5,10 @@ import StatsCache from '@/lib/models/StatsCache';
 
 const SYNC_TTL = 30 * 60 * 1000; // 30 minutes
 
+// Static Cloudinary URLs (uploaded once, reused forever)
+const GH_IMAGE = 'https://res.cloudinary.com/dk8yncvz8/image/upload/v1772221116/portfolio/github.webp';
+const LC_IMAGE = 'https://res.cloudinary.com/dk8yncvz8/image/upload/v1772221115/portfolio/leetcode.png';
+
 const LC_RECENT_SUBMISSIONS_QUERY = `
   query recentAcSubmissions($username: String!, $limit: Int!) {
     recentAcSubmissionList(username: $username, limit: $limit) {
@@ -89,7 +93,7 @@ export async function POST() {
               text: commitCount > 0
                 ? `Pushed ${commitCount} commit${commitCount !== 1 ? 's' : ''}${commitMsgs ? ':\n' + commitMsgs : ''}`
                 : `Pushed to ${shortRepo} branch ${(e.payload?.ref || '').replace('refs/heads/', '')}`,
-              image: '/github.webp',
+              image: GH_IMAGE,
               tag: '#github #commits',
               createdAt: new Date(e.created_at),
             };
@@ -100,7 +104,7 @@ export async function POST() {
               type: 'github',
               title: `PR ${e.payload?.action}: ${pr?.title || 'Pull Request'}`,
               text: `${e.payload?.action === 'opened' ? 'Opened' : 'Updated'} PR in ${e.repo?.name?.split('/')[1] || e.repo?.name}${pr?.body ? `: ${pr.body.slice(0, 120)}` : ''}`,
-              image: '/github.webp',
+              image: GH_IMAGE,
               tag: '#github #pullrequest',
               createdAt: new Date(e.created_at),
             };
@@ -149,7 +153,7 @@ export async function POST() {
           type: 'leetcode',
           title: `Solved: ${sub.title}`,
           text: `Aditya just submitted "${sub.title}" on LeetCode in ${sub.lang}. Keep grinding! 🧠`,
-          image: '/leetcode.png',
+          image: LC_IMAGE,
           tag: '#leetcode #dsa',
           sourceId,
           source: 'leetcode',

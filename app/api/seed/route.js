@@ -44,7 +44,7 @@ const starterPosts = [
     type: 'github',
     title: 'GitHub Activity',
     text: 'Pushed 5 commits to portfolio repo. Improved UX performance with route-level rendering and lazy-loaded Three.js scenes.',
-    image: '/github.webp',
+    image: 'https://res.cloudinary.com/dk8yncvz8/image/upload/v1772221116/portfolio/github.webp',
     tag: '#github',
     createdAt: new Date('2026-02-25T14:30:00+05:30'),
     replies: 3,

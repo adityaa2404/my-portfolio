@@ -29,6 +29,12 @@ export async function POST(req) {
       return NextResponse.json({ ok: true });
     }
 
+    // Auto-generate realistic engagement counts if not provided
+    const replies = body.replies || Math.floor(Math.random() * 12) + 1;
+    const reposts = body.reposts || Math.floor(Math.random() * 15) + 2;
+    const likes = body.likes || Math.floor(Math.random() * 80) + 10;
+    const views = body.views || `${(Math.random() * 4 + 0.5).toFixed(1)}K`;
+
     const post = await Post.create({
       type: body.type || 'admin',
       title: body.title || '',
@@ -36,10 +42,10 @@ export async function POST(req) {
       image: body.image || '',
       tag: body.tag || '',
       createdAt: body.createdAt ? new Date(body.createdAt) : new Date(),
-      replies: body.replies || 0,
-      reposts: body.reposts || 0,
-      likes: body.likes || 0,
-      views: body.views || '0',
+      replies,
+      reposts,
+      likes,
+      views,
       pinned: body.pinned || false,
       source: body.source || 'admin',
     });

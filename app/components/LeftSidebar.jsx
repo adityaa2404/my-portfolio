@@ -28,7 +28,7 @@ const iconMap = {
   more: FiMoreHorizontal,
 };
 
-export default function LeftSidebar({ navItems, path, onNavClick, avatar }) {
+export default function LeftSidebar({ navItems, path, onNavClick, avatar, notifCount = 0 }) {
   const [hoveredItem, setHoveredItem] = useState(null);
 
   return (
@@ -66,6 +66,9 @@ export default function LeftSidebar({ navItems, path, onNavClick, avatar }) {
             >
               <span className="nav-icon-wrap">
                 {Icon && <Icon size={24} />}
+                {item.icon === 'bell' && notifCount > 0 && (
+                  <span className="nav-notif-badge">{notifCount > 9 ? '9+' : notifCount}</span>
+                )}
                 {isActive && (
                   <motion.span
                     className="nav-active-dot"
