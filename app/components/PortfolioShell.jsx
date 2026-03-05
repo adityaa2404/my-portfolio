@@ -6,6 +6,7 @@ import MainFeed from './MainFeed';
 import RightSidebar from './RightSidebar';
 import MobileNav from './MobileNav';
 import GrokModal from './GrokModal';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const navItems = [
   { label: 'Home', icon: 'home', path: '/' },
@@ -92,6 +93,7 @@ export default function PortfolioShell() {
   const [posts, setPosts] = useState(starterPosts);
   const [likedPosts, setLikedPosts] = useState({});
   const [feedLoading, setFeedLoading] = useState(true);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
   // Theme persistence
   useEffect(() => {
@@ -214,8 +216,46 @@ export default function PortfolioShell() {
         likedPosts={likedPosts}
         toggleLike={toggleLike}
         loading={feedLoading}
+        onOpenDrawer={() => setIsMobileDrawerOpen(true)}
       />
-      <RightSidebar />
+      
+      {/* Desktop Right Sidebar */}
+      <div className="desktop-only">
+        <RightSidebar />
+      </div>
+
+      {/* Mobile Drawer wrapper for navigation on mobile */}
+      <AnimatePresence>
+        {isMobileDrawerOpen && (
+          <>
+            <motion.div 
+              className="mobile-drawer-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileDrawerOpen(false)}
+            />
+            <motion.div 
+              className="mobile-drawer"
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            >
+              <LeftSidebar
+                navItems={navItems}
+                path={path}
+                onNavClick={(item) => {
+                  onNavClick(item);
+                  setIsMobileDrawerOpen(false);
+                }}
+                avatar={ghStats?.avatar}
+              />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       <MobileNav
         path={path}
         navigate={(p) => {

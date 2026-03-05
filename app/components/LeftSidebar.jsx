@@ -12,8 +12,8 @@ import {
   FiMoreHorizontal,
   FiSun,
   FiMoon,
+  FiSearch,
 } from 'react-icons/fi';
-import { SiOpenai } from 'react-icons/si';
 import { useState } from 'react';
 
 const iconMap = {
@@ -21,7 +21,7 @@ const iconMap = {
   explore: FiHash,
   bell: FiBell,
   chat: FiMessageCircle,
-  grok: SiOpenai,
+  grok: FiSearch,
   bookmark: FiBookmark,
   code: FiCode,
   user: FiUser,

@@ -14,6 +14,7 @@ import {
   FiSun,
   FiMoon,
   FiArrowLeft,
+  FiMenu,
 } from 'react-icons/fi';
 import {
   SiLeetcode,
@@ -737,6 +738,7 @@ export default function MainFeed({
   likedPosts,
   toggleLike,
   loading,
+  onOpenDrawer,
 }) {
   const [feedTab, setFeedTab] = useState('foryou');
 
@@ -764,12 +766,21 @@ export default function MainFeed({
       {/* Sticky Header */}
       <header className="feed-header">
         <div className="feed-header-inner">
-          {path !== '/' && (
-            <button className="feed-back-btn" onClick={() => window.history.back()}>
-              <FiArrowLeft size={20} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <button 
+              className="mobile-menu-btn" 
+              onClick={onOpenDrawer}
+              style={{ display: 'none', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}
+            >
+              <FiMenu size={22} />
             </button>
-          )}
-          <h2 className="feed-header-title">{headerTitle}</h2>
+            {path !== '/' && (
+              <button className="feed-back-btn" onClick={() => window.history.back()}>
+                <FiArrowLeft size={20} />
+              </button>
+            )}
+            <h2 className="feed-header-title">{headerTitle}</h2>
+          </div>
           <button
             className="theme-toggle"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}

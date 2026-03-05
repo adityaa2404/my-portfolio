@@ -1,3 +1,6 @@
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import StatsCache from '@/lib/models/StatsCache';

@@ -1,14 +1,13 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiHome, FiHash, FiUser } from 'react-icons/fi';
-import { SiOpenai } from 'react-icons/si';
+import { FiHome, FiHash, FiUser, FiSearch, FiPlus } from 'react-icons/fi';
 
 export default function MobileNav({ path, navigate, onOpenAsk }) {
   const items = [
     { icon: FiHome, label: 'Home', p: '/' },
     { icon: FiHash, label: 'Explore', p: '/projects' },
-    { icon: SiOpenai, label: 'Ask', p: '/grok', action: onOpenAsk },
+    { icon: FiSearch, label: 'Ask', p: '/grok', action: onOpenAsk },
     { icon: FiUser, label: 'Profile', p: '/profile' },
   ];
 
@@ -48,12 +47,7 @@ export default function MobileNav({ path, navigate, onOpenAsk }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
       >
-        <svg viewBox="0 0 24 24" width={24} height={24}>
-          <path
-            fill="white"
-            d="M23 3c-6.62-.1-10.38 2.421-13.05 6.03C7.29 12.61 6.8 17.21 6.8 21h2.394c.08-3.234.554-6.672 2.736-9.675C14.28 7.88 17.24 5.3 23 5.3V3z"
-          />
-        </svg>
+        <FiPlus size={24} color="white" />
       </motion.a>
     </>
   );
