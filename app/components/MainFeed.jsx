@@ -168,7 +168,6 @@ function TweetCard({ post, index, liked, onToggleLike, avatar }) {
             <p className="tweet-title-line">{post.title}</p>
           )}
           <p className="tweet-text">{post.text}</p>
-          {/* Post image for github/leetcode posts */}
           {post.image && (
             <div className="tweet-image" style={{ marginTop: 10, marginBottom: 6 }}>
               <img
@@ -227,8 +226,8 @@ function ProjectCard({ project, index }) {
       transition={{ duration: 0.45, delay: index * 0.14 }}
       whileHover={{ y: -6, boxShadow: '0 16px 48px rgba(29,155,240,0.18)' }}
     >
-      {/* Gradient banner */}
-      <div className="pv2-banner" style={{ background: project.gradient }}>
+      {/* Solid banner header */}
+      <div className="pv2-banner">
         <span className="pv2-emoji">{project.emoji}</span>
         {project.status && <span className="pv2-status">{project.status}</span>}
       </div>
