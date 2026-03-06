@@ -2077,6 +2077,14 @@ ul {
   }
 }
 
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 8px;
+}
 
 @media (max-width: 900px) {
   .app-shell {
@@ -2174,18 +2182,53 @@ ul {
 .mobile-drawer {
   position: fixed;
   top: 0;
-  left: -280px;
+  left: 0;
   width: 280px;
   height: 100vh;
   background: var(--bg);
   z-index: 101;
-  transition: transform 0.3s var(--ease-out);
   border-right: 1px solid var(--border-color);
   overflow-y: auto;
 }
 
-.mobile-drawer.open {
-  transform: translateX(280px);
+/* Show full sidebar content in mobile drawer */
+.mobile-drawer .nav-label {
+  display: block;
+}
+
+.mobile-drawer .identity-info {
+  display: flex;
+}
+
+.mobile-drawer .identity-more {
+  display: block;
+}
+
+.mobile-drawer .sidebar-post-btn {
+  width: calc(100% - 12px);
+  height: auto;
+  padding: 16px 32px;
+  border-radius: 9999px;
+  font-size: 17px;
+  margin: 16px auto 0;
+}
+
+.mobile-drawer .sidebar-post-btn::after {
+  content: none;
+}
+
+.mobile-drawer .nav-item {
+  justify-content: flex-start;
+  padding: 12px;
+}
+
+.mobile-drawer .sidebar-identity {
+  justify-content: flex-start;
+}
+
+.mobile-drawer .left-sidebar {
+  align-items: stretch;
+  padding: 0 12px;
 }
 
 /* ═══════════════════════════════════════════════

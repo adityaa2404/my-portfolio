@@ -769,7 +769,6 @@ export default function MainFeed({
             <button 
               className="mobile-menu-btn" 
               onClick={onOpenDrawer}
-              style={{ display: 'none', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}
             >
               <FiMenu size={22} />
             </button>
@@ -834,7 +833,7 @@ export default function MainFeed({
                   )}
                 </div>
                 <div className="compose-input">
-                  <span>What&apos;s happening in your dev journey?</span>
+                  <span>Here&apos;s What&apos;s Happening in my day !!</span>
                 </div>
               </div>
 
