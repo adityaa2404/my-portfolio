@@ -165,7 +165,7 @@ export default function PortfolioShell() {
         return;
       }
       if (item.path === '/chat') {
-        window.open('https://wa.me/917745060502', '_blank');
+        window.open('https://wa.me/', '_blank');
         return;
       }
       if (item.externalLink) {

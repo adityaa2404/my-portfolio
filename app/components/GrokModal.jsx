@@ -60,7 +60,7 @@ export default function GrokModal({ show, onClose }) {
         ...prev,
         {
           role: 'bot',
-          text: "I'm having trouble connecting right now. You can reach Aditya at adityapotdar2404@gmail.com or WhatsApp +91 7745060502.",
+          text: "I'm having trouble connecting right now. You can reach Aditya at adityapotdar2404@gmail.com or WhatsApp .",
           quickActions: true,
         },
       ]);
