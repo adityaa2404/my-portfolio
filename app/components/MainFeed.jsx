@@ -437,6 +437,73 @@ function StatCard({ label, value, sub }) {
 }
 
 /* ── GitHub Heatmap ─────────────────────────── */
+function HeatmapScroller({ weeks, children }) {
+  const viewportRef = useRef(null);
+  const [scrollMax, setScrollMax] = useState(0);
+  const [scrollValue, setScrollValue] = useState(0);
+
+  const monthLabels = useMemo(() => {
+    let previousMonth = '';
+    return weeks.map((week, index) => {
+      const day = week.find(Boolean);
+      if (!day?.date) return { index, label: '' };
+      const date = new Date(`${day.date}T00:00:00`);
+      const month = `${date.getFullYear()}-${date.getMonth()}`;
+      const label = index === 0 || month !== previousMonth
+        ? date.toLocaleDateString('en-US', { month: 'short' })
+        : '';
+      previousMonth = month;
+      return { index, label };
+    });
+  }, [weeks]);
+
+  useEffect(() => {
+    const updateScrollState = () => {
+      const viewport = viewportRef.current;
+      if (!viewport) return;
+      setScrollMax(Math.max(0, viewport.scrollWidth - viewport.clientWidth));
+      setScrollValue(viewport.scrollLeft);
+    };
+    updateScrollState();
+    window.addEventListener('resize', updateScrollState);
+    return () => window.removeEventListener('resize', updateScrollState);
+  }, [weeks.length]);
+
+  const handleRangeChange = (event) => {
+    const value = Number(event.target.value);
+    if (viewportRef.current) viewportRef.current.scrollLeft = value;
+    setScrollValue(value);
+  };
+
+  return (
+    <>
+      <div
+        ref={viewportRef}
+        className="heatmap-viewport"
+        onScroll={(event) => setScrollValue(event.currentTarget.scrollLeft)}
+      >
+        <div className="heatmap-content">
+          <div className="heatmap-months" aria-hidden="true">
+            {monthLabels.map(({ index, label }) => <span key={index}>{label}</span>)}
+          </div>
+          {children}
+        </div>
+      </div>
+      {scrollMax > 0 && (
+        <input
+          className="heatmap-scrollbar"
+          type="range"
+          min="0"
+          max={scrollMax}
+          value={scrollValue}
+          onChange={handleRangeChange}
+          aria-label="Scroll activity timeline"
+        />
+      )}
+    </>
+  );
+}
+
 function GitHubHeatmap({ data }) {
   // data may be flat array of { date, count, level } or nested weeks
   // Normalize to flat array, take last ~365 entries
@@ -472,6 +539,7 @@ function GitHubHeatmap({ data }) {
 
   return (
     <div className="gh-heatmap">
+      <HeatmapScroller weeks={weeks}>
       <div className="gh-heatmap-grid">
         {weeks.map((week, wi) => (
           <div key={wi} className="gh-heatmap-col">
@@ -486,6 +554,7 @@ function GitHubHeatmap({ data }) {
           </div>
         ))}
       </div>
+      </HeatmapScroller>
       <div className="gh-heatmap-footer">
         <span className="gh-heatmap-total">{totalContribs} contributions in the last year</span>
         <div className="gh-heatmap-legend">
@@ -549,6 +618,7 @@ function LeetCodeHeatmap({ data }) {
 
   return (
     <div className="gh-heatmap">
+      <HeatmapScroller weeks={weeks}>
       <div className="gh-heatmap-grid">
         {weeks.map((week, wi) => (
           <div key={wi} className="gh-heatmap-col">
@@ -563,6 +633,7 @@ function LeetCodeHeatmap({ data }) {
           </div>
         ))}
       </div>
+      </HeatmapScroller>
       <div className="gh-heatmap-footer">
         <span className="gh-heatmap-total">{totalSubs} submissions in the last year</span>
         <div className="gh-heatmap-legend">

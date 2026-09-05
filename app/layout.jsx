@@ -1,6 +1,10 @@
 import './globals.css';
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+
 export const metadata = {
+  metadataBase: new URL(siteUrl),
   title: 'Aditya Potdar | Developer OS Portfolio',
   description:
     'Twitter/X-inspired living portfolio of Aditya Potdar — Full Stack Developer, competitive programmer, AI builder.',
