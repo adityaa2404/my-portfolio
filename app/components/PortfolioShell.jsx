@@ -29,55 +29,46 @@ const starterPosts = [];
 
 const projectCards = [
   {
+    title: 'Legal Assist',
+    stack: ['React', 'TypeScript', 'FastAPI', 'Celery', 'Redis', 'MongoDB', 'Presidio', 'EasyOCR', 'Clerk'],
+    description:
+      'Privacy-preserving legal document RAG application for citation-grounded chat, document analysis, risk scoring, and clause extraction.',
+    github: 'https://github.com/adityaa2404/legal-assist',
+    demo: 'https://legal-assist-neon.vercel.app/',
+    metric: 'Vectorless retrieval with BM25 + hierarchical document search',
+    highlights: ['Streaming legal chat', 'Async OCR processing', 'PII anonymization for Indian legal entities'],
+  },
+  {
     title: 'BillMaster',
-    stack: ['MERN', 'Redux Toolkit', 'TailwindCSS'],
+    stack: ['React 19', 'Node.js', 'Express', 'MongoDB', 'Redux Toolkit'],
     description:
-      'Full-stack electrical billing and estimation platform with live editing, modular MVC backend, and synchronized bill state across sessions.',
-    github: 'https://github.com/adityaa2404',
-    demo: null,
-    metric: 'Reduced estimation time by 60%',
-    emoji: '⚡',
-    highlights: ['Live bill editing', 'Role-based auth', 'PDF export'],
-    status: 'Production',
+      'Electrical billing and estimation system for managing customers, hierarchical work structures, quotations, and professional invoices.',
+    github: 'https://github.com/adityaa2404/bill-master',
+    demo: 'https://bill-master-opal.vercel.app/',
+    metric: 'Faster recurring estimation through customer-specific rate memory',
+    highlights: ['Immutable bill snapshots', 'Automated pricing workflows', 'Print-ready PDF invoices'],
   },
   {
-    title: 'LawBuddy AI',
-    stack: ['FastAPI', 'Vertex AI', 'Pinecone', 'Google Cloud'],
+    title: 'Distributor360',
+    stack: ['FastAPI', 'Supabase', 'PostgreSQL', 'AWS', 'GitHub Actions', 'Google Workspace'],
     description:
-      'AI legal assistant for OCR parsing, risk detection, clause interpretation, and conversational Q&A on legal documents.',
-    github: 'https://github.com/adityaa2404',
+      'CRM and digital diary platform for mutual fund distributors, with scalable APIs, Google Workspace automations, and multilingual natural-language data access.',
+    github: null,
     demo: null,
-    metric: 'Top 44 Accuracy at HackRx 6.0',
-    emoji: '⚖️',
-    highlights: ['OCR + Document AI', 'Vector search', 'Legal Q&A chatbot'],
-    status: 'Hackathon Winner',
-  },
-  {
-    title: 'Lister AI',
-    stack: ['Whisper AI', 'Gemini LLM', 'React', 'FastAPI'],
-    description:
-      'Voice-powered electrical material list generator with auto-categorization and automated Excel export.',
-    github: 'https://github.com/adityaa2404',
-    demo: null,
-    metric: 'Automated entire list generation workflow',
-    emoji: '🎙️',
-    highlights: ['Voice transcription', 'LLM categorization', 'Excel export'],
-    status: 'Production',
+    metric: 'Natural-language data retrieval in under 7 seconds',
+    highlights: ['English, Hindi, and Hinglish NL-to-SQL', 'Google Sheets, Calendar, and email workflows', '8-layer security architecture'],
+    status: 'Internship Project',
   },
 ];
 
 const skillCategories = {
-  Languages: ['JavaScript', 'TypeScript', 'C', 'C++', 'Java', 'Python', 'HTML', 'CSS'],
-  'Frameworks & Libraries': ['React', 'Next.js', 'Express.js', 'Node.js', 'Tailwind CSS'],
-  'Databases & Services': ['MongoDB', 'PostgreSQL', 'MySQL', 'Supabase', 'Firebase', 'Prisma'],
-  'Developer Tools': ['Git', 'GitHub', 'VS Code', 'IntelliJ IDEA', 'Vercel', 'Postman', 'Docker'],
+  Languages: ['C++', 'Python', 'JavaScript', 'SQL'],
+  Frontend: ['React', 'Redux Toolkit', 'Tailwind CSS', 'Framer Motion', 'HTML', 'CSS'],
+  Backend: ['FastAPI', 'Node.js', 'REST APIs', 'JWT Authentication'],
+  Databases: ['PostgreSQL', 'MongoDB', 'MySQL', 'Supabase'],
+  'DevOps & Cloud': ['Docker', 'Docker Compose', 'GitHub Actions', 'AWS EC2', 'Shell Scripting', 'Git'],
+  'AI & Tools': ['LLMs', 'RAG', 'MCP', 'LangChain', 'LangGraph', 'Claude Code', 'Cursor', 'Google AI Studio'],
 };
-
-const interestBlocks = [
-  { name: '🏏 Cricket', headline: 'India squad updates + IPL analytics trends' },
-  { name: '🚗 Cars', headline: 'EV performance wars heating up in 2026' },
-  { name: '🏍 Bikes', headline: 'Adventure touring segment sees new launches' },
-];
 
 export default function PortfolioShell() {
   const [path, setPath] = useState('/');
@@ -91,6 +82,7 @@ export default function PortfolioShell() {
   const [likedPosts, setLikedPosts] = useState({});
   const [feedLoading, setFeedLoading] = useState(true);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [visitCount, setVisitCount] = useState(null);
 
   // Theme persistence
   useEffect(() => {
@@ -114,49 +106,71 @@ export default function PortfolioShell() {
 
   // Fetch trending — now handled inside RightSidebar itself
 
-  // Sync GitHub/LeetCode posts to DB, then load everything from DB
+  // Load posts immediately — but keep the skel visible long enough to feel intentional
   useEffect(() => {
+    let alive = true;
+    const startedAt = Date.now();
+
     (async () => {
       setFeedLoading(true);
-
-      // Auto-seed if DB is empty (first load)
       try {
-        const postsRes = await fetch('/api/posts');
-        const dbPosts = await postsRes.json();
-        if (!Array.isArray(dbPosts) || dbPosts.length === 0) {
-          await fetch('/api/seed', { method: 'POST' });
+        const res = await fetch('/api/posts').catch(() => null);
+        const dbPosts = res ? await res.json() : [];
+        if (Array.isArray(dbPosts) && dbPosts.length > 0) {
+          setPosts(dbPosts);
+        } else {
+          await fetch('/api/seed', { method: 'POST' }).catch(() => null);
+          const retry = await fetch('/api/posts').catch(() => null);
+          const seeded = retry ? await retry.json() : [];
+          if (Array.isArray(seeded) && seeded.length > 0) setPosts(seeded);
         }
       } catch {}
 
-      // Sync GitHub events + LeetCode submissions → DB (server-side, 30min TTL)
-      try {
-        await fetch('/api/sync', { method: 'POST' });
-      } catch {}
+      const elapsed = Date.now() - startedAt;
+      const minDelay = 700;
+      const waitTime = Math.max(0, minDelay - elapsed);
 
-      // Load all posts from DB (already sorted: pinned first, then newest)
-      try {
-        const postsRes = await fetch('/api/posts');
-        const allPosts = await postsRes.json();
-        if (Array.isArray(allPosts) && allPosts.length > 0) {
-          setPosts(allPosts);
-        }
-      } catch {}
+      window.setTimeout(() => {
+        if (alive) setFeedLoading(false);
+      }, waitTime);
+    })();
 
-      // Fetch cached stats from API (profile stats + heatmaps)
-      try {
-        const statsRes = await fetch('/api/stats');
-        const stats = await statsRes.json();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  // Load stats independently (slow third-party APIs, shouldn't block the feed)
+  useEffect(() => {
+    fetch('/api/stats')
+      .then((r) => r.json())
+      .then((stats) => {
         if (stats.ghStats) setGhStats(stats.ghStats);
         if (stats.ghHeatmap) setGhHeatmap(stats.ghHeatmap);
         if (stats.lcStats) setLcStats(stats.lcStats);
         if (stats.lcHeatmap) setLcHeatmap(stats.lcHeatmap);
-      } catch {}
-
-      setFeedLoading(false);
-    })();
+      })
+      .catch(() => {});
   }, []);
 
-  // Infinite scroll removed — no junk posts
+  // Sync GitHub/LeetCode activity into posts in the background, then refresh feed
+  useEffect(() => {
+    fetch('/api/sync', { method: 'POST' })
+      .then(() => fetch('/api/posts'))
+      .then((r) => r.json())
+      .then((freshPosts) => {
+        if (Array.isArray(freshPosts) && freshPosts.length > 0) setPosts(freshPosts);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Increment visit count on mount
+  useEffect(() => {
+    fetch('/api/visit', { method: 'POST' })
+      .then(r => r.json())
+      .then(d => setVisitCount(d.count))
+      .catch(() => {});
+  }, []);
 
   const onNavClick = useCallback(
     (item) => {
@@ -165,7 +179,7 @@ export default function PortfolioShell() {
         return;
       }
       if (item.path === '/chat') {
-        window.open('https://wa.me/', '_blank');
+        window.open('https://wa.me/917745060502', '_blank');
         return;
       }
       if (item.externalLink) {
@@ -213,6 +227,7 @@ export default function PortfolioShell() {
         likedPosts={likedPosts}
         toggleLike={toggleLike}
         loading={feedLoading}
+        visitCount={visitCount}
         onOpenDrawer={() => setIsMobileDrawerOpen(true)}
       />
       

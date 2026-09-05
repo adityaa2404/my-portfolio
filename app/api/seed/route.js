@@ -30,7 +30,7 @@ const starterPosts = [
   },
   {
     type: 'thread',
-    title: '🧵 Problem → Solution',
+    title: 'Problem → Solution',
     text: "Problem: Static portfolios feel dead.\nSolution: A timeline-based portfolio with live stats, trending tech cards, and conversational AI — feels alive, current, and real.",
     tag: '#productthinking',
     createdAt: new Date('2026-02-22T09:15:00+05:30'),
@@ -56,7 +56,7 @@ const starterPosts = [
   {
     type: 'build',
     title: 'LawBuddy AI',
-    text: 'Built an AI legal assistant — OCR-based parsing with Google Document AI, clause interpretation with Vertex AI (Gemini), and Pinecone vector search. Top 44 accuracy at HackRx 6.0. 🚀',
+    text: 'Built an AI legal assistant — OCR-based parsing with Google Document AI, clause interpretation with Vertex AI (Gemini), and Pinecone vector search. Top 44 accuracy at HackRx 6.0.',
     tag: '#AI #hackathon',
     createdAt: new Date('2026-01-15T11:00:00+05:30'),
     replies: 21,

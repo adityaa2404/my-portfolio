@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { FiHome, FiHash, FiUser, FiSearch, FiPlus } from 'react-icons/fi';
 
 export default function MobileNav({ path, navigate, onOpenAsk }) {
@@ -13,7 +13,6 @@ export default function MobileNav({ path, navigate, onOpenAsk }) {
 
   return (
     <>
-      {/* Fixed bottom nav */}
       <nav className="mobile-nav">
         {items.map(({ icon: Icon, label, p, action }) => {
           const active = p === path;
@@ -37,18 +36,9 @@ export default function MobileNav({ path, navigate, onOpenAsk }) {
         })}
       </nav>
 
-      {/* Floating compose button */}
-      <motion.a
-        href="mailto:adityapotdar2404@gmail.com"
-        className="fab-compose"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-      >
+      <a href="mailto:adityapotdar2404@gmail.com" className="fab-compose">
         <FiPlus size={24} color="white" />
-      </motion.a>
+      </a>
     </>
   );
 }

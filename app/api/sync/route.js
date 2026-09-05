@@ -155,7 +155,7 @@ export async function POST() {
         await Post.create({
           type: 'leetcode',
           title: `Solved: ${sub.title}`,
-          text: `Aditya just submitted "${sub.title}" on LeetCode in ${sub.lang}. Keep grinding! 🧠`,
+          text: `Aditya just submitted "${sub.title}" on LeetCode in ${sub.lang}.`,
           image: LC_IMAGE,
           tag: '#leetcode #dsa',
           sourceId,

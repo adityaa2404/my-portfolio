@@ -4,6 +4,9 @@ export const metadata = {
   title: 'Aditya Potdar | Developer OS Portfolio',
   description:
     'Twitter/X-inspired living portfolio of Aditya Potdar — Full Stack Developer, competitive programmer, AI builder.',
+  icons: {
+    icon: '/logo.png',
+  },
   openGraph: {
     title: 'Aditya Potdar | Developer OS',
     description:

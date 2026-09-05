@@ -99,7 +99,7 @@ export default function GrokModal({ show, onClose }) {
             {/* Header */}
             <div className="grok-header">
               <div className="grok-header-left">
-                <span className="grok-logo">✦</span>
+                <span className="grok-logo">A</span>
                 <span className="grok-title">Ask</span>
                 <span className="grok-subtitle">Ask about Aditya</span>
               </div>
@@ -111,14 +111,8 @@ export default function GrokModal({ show, onClose }) {
             {/* Messages */}
             <div className="grok-messages">
               {messages.map((msg, i) => (
-                <motion.div
-                  key={i}
-                  className={`grok-msg ${msg.role}`}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                >
-                  {msg.role === 'bot' && <span className="grok-msg-icon">✦</span>}
+                <div key={i} className={`grok-msg ${msg.role}`}>
+                  {msg.role === 'bot' && <span className="grok-msg-icon">A</span>}
                   <div className="grok-msg-content">
                     <p>{msg.text}</p>
                     {msg.quickActions && (
@@ -146,15 +140,11 @@ export default function GrokModal({ show, onClose }) {
                       </div>
                     )}
                   </div>
-                </motion.div>
+                </div>
               ))}
               {isTyping && (
-                <motion.div
-                  className="grok-msg bot"
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <span className="grok-msg-icon">✦</span>
+                <div className="grok-msg bot">
+                  <span className="grok-msg-icon">A</span>
                   <div className="grok-msg-content">
                     <p className="typing-indicator">
                       <span className="dot" />
@@ -162,7 +152,7 @@ export default function GrokModal({ show, onClose }) {
                       <span className="dot" />
                     </p>
                   </div>
-                </motion.div>
+                </div>
               )}
               <div ref={endRef} />
             </div>
@@ -176,16 +166,13 @@ export default function GrokModal({ show, onClose }) {
                   'How to contact him?',
                   'What is his education?',
                 ].map((q, i) => (
-                  <motion.button
+                  <button
                     key={i}
                     className="grok-suggestion-chip"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 + i * 0.08 }}
                     onClick={() => sendMessage(q)}
                   >
                     {q}
-                  </motion.button>
+                  </button>
                 ))}
               </div>
             )}

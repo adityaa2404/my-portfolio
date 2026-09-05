@@ -15,6 +15,14 @@ import {
   FiMoon,
   FiArrowLeft,
   FiMenu,
+  FiCode,
+  FiBookOpen,
+  FiAward,
+  FiArrowRight,
+  FiUser,
+  FiBookmark,
+  FiLayers,
+  FiZap,
 } from 'react-icons/fi';
 import {
   SiLeetcode,
@@ -22,13 +30,36 @@ import {
   SiReact, SiNextdotjs, SiExpress, SiNodedotjs, SiTailwindcss,
   SiMongodb, SiPostgresql, SiMysql, SiSupabase, SiFirebase, SiPrisma,
   SiGit, SiGithub, SiVscodium, SiIntellijidea, SiVercel, SiPostman, SiDocker,
-  SiCplusplus, SiC,
+  SiCplusplus, SiC, SiRedux, SiFramer, SiFastapi, SiJsonwebtokens,
+  SiGithubactions, SiAmazonwebservices, SiGnubash, SiLangchain, SiClaude, SiGoogle,
 } from 'react-icons/si';
 import { FaJava } from 'react-icons/fa';
 import dynamic from 'next/dynamic';
-import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-const Globe = dynamic(() => import('./Globe'), { ssr: false });
+const Globe = dynamic(() => import('./Globe'), {
+  ssr: false,
+  loading: () => (
+    <div
+      aria-label="Loading globe"
+      style={{
+        width: '100%',
+        height: '100%',
+        minHeight: 220,
+        borderRadius: 18,
+        background: 'radial-gradient(circle at center, rgba(89, 124, 255, 0.2), rgba(10, 12, 18, 0.9))',
+        display: 'grid',
+        placeItems: 'center',
+        color: '#dfe7ff',
+        fontSize: 13,
+        letterSpacing: '0.04em',
+        textTransform: 'uppercase',
+      }}
+    >
+      Loading globe...
+    </div>
+  ),
+});
 
 /* ── format IST helper ────────────────────────── */
 function formatIST(dateStr) {
@@ -78,15 +109,23 @@ const SKILL_ICON_MAP = {
   'Vercel': { Icon: SiVercel, color: '#ffffff' },
   'Postman': { Icon: SiPostman, color: '#FF6C37' },
   'Docker': { Icon: SiDocker, color: '#2496ED' },
+  'Redux Toolkit': { Icon: SiRedux, color: '#764ABC' },
+  'Framer Motion': { Icon: SiFramer, color: '#0055FF' },
+  'FastAPI': { Icon: SiFastapi, color: '#009688' },
+  'JWT Authentication': { Icon: SiJsonwebtokens, color: '#D63AFF' },
+  'GitHub Actions': { Icon: SiGithubactions, color: '#2088FF' },
+  'AWS EC2': { Icon: SiAmazonwebservices, color: '#FF9900' },
+  'Shell Scripting': { Icon: SiGnubash, color: '#4EAA25' },
+  'LangChain': { Icon: SiLangchain, color: '#1C3C3C' },
+  'Claude Code': { Icon: SiClaude, color: '#D97757' },
+  'Google AI Studio': { Icon: SiGoogle, color: '#4285F4' },
 };
 
-/* ── animation variants ─────────────────────── */
-const fadeUp = {
-  initial: { opacity: 0, y: 24 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -12 },
-};
-const stagger = { animate: { transition: { staggerChildren: 0.04 } } };
+const TECH_SPHERE_SKILLS = [
+  'React', 'Redux Toolkit', 'Tailwind CSS', 'Framer Motion', 'FastAPI', 'Node.js',
+  'PostgreSQL', 'MongoDB', 'Docker', 'GitHub Actions', 'LangChain', 'Claude Code',
+  'C++', 'Python', 'JavaScript', 'Supabase', 'AWS EC2', 'Git',
+];
 
 /* ── X/Twitter-style Shimmer Skeleton ────────── */
 function TweetSkeleton() {
@@ -114,7 +153,18 @@ function TweetSkeleton() {
 function FeedSkeletonLoader() {
   return (
     <div className="skeleton-feed">
-      {Array.from({ length: 5 }).map((_, i) => (
+      <div className="compose-skeleton">
+        <div className="skel-avatar shimmer" />
+        <div className="skel-compose-line shimmer" />
+      </div>
+      <div className="profile-prompt-skeleton">
+        <div className="skel-prompt-icon shimmer" />
+        <div className="skel-prompt-copy">
+          <div className="skel-name shimmer" />
+          <div className="skel-line shimmer" style={{ width: '72%' }} />
+        </div>
+      </div>
+      {Array.from({ length: 4 }).map((_, i) => (
         <TweetSkeleton key={i} />
       ))}
     </div>
@@ -124,14 +174,8 @@ function FeedSkeletonLoader() {
 /* ── Tweet Card ──────────────────────────────── */
 function TweetCard({ post, index, liked, onToggleLike, avatar }) {
   return (
-    <motion.article
-      className={`tweet-card ${post.type === 'pinned' ? 'pinned' : ''}`}
-      variants={fadeUp}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      transition={{ duration: 0.25, delay: Math.min(index * 0.03, 0.4) }}
-    >
+    <article className={`tweet-card ${post.type === 'pinned' ? 'pinned' : ''}`}>
+
       {post.type === 'pinned' && (
         <div className="tweet-pinned-label">
           <FiRepeat size={12} /> Pinned
@@ -211,24 +255,18 @@ function TweetCard({ post, index, liked, onToggleLike, avatar }) {
           </div>
         </div>
       </div>
-    </motion.article>
+    </article>
   );
 }
 
 /* ── Project Card (redesigned) ────────────────── */
 function ProjectCard({ project, index }) {
   return (
-    <motion.div
-      className="project-card-v2"
-      variants={fadeUp}
-      initial="initial"
-      animate="animate"
-      transition={{ duration: 0.45, delay: index * 0.14 }}
-      whileHover={{ y: -6, boxShadow: '0 16px 48px rgba(29,155,240,0.18)' }}
-    >
-      {/* Solid banner header */}
+    <div className="project-card-v2">
+
+      {/* Banner header */}
       <div className="pv2-banner">
-        <span className="pv2-emoji">{project.emoji}</span>
+        <FiCode size={22} className="pv2-icon" />
         {project.status && <span className="pv2-status">{project.status}</span>}
       </div>
 
@@ -272,141 +310,129 @@ function ProjectCard({ project, index }) {
           )}
         </div>
       </div>
-    </motion.div>
-  );
-}
-
-/* ── Skill Chip ──────────────────────────────── */
-function SkillChip({ name, icon, delay }) {
-  const IconComp = icon?.Icon;
-  return (
-    <motion.span
-      className="skill-chip"
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.3, delay }}
-      whileHover={{ scale: 1.08, backgroundColor: 'var(--accent)', color: '#fff' }}
-    >
-      {IconComp && <IconComp size={16} color={icon.color} />}
-      {name}
-    </motion.span>
-  );
-}
-
-/* ── Floating Skills ────────────────────────── */
-function FloatingSkills({ skills, iconMap }) {
-  const containerRef = useRef(null);
-  const [paused, setPaused] = useState(false);
-  const [positions, setPositions] = useState([]);
-  const animFrame = useRef(null);
-  const particlesRef = useRef([]);
-
-  // Initialize random positions + velocities once
-  useEffect(() => {
-    const count = skills.length;
-    const particles = skills.map((_, i) => {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 0.3 + Math.random() * 0.5;
-      return {
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        size: 36 + Math.random() * 16,
-      };
-    });
-    particlesRef.current = particles;
-    setPositions(particles.map(p => ({ x: p.x, y: p.y, size: p.size })));
-  }, [skills]);
-
-  // Animation loop
-  useEffect(() => {
-    let lastTime = performance.now();
-
-    const animate = (now) => {
-      const dt = Math.min((now - lastTime) / 16, 3); // Normalize to ~60fps, cap at 3x
-      lastTime = now;
-
-      if (!paused) {
-        const particles = particlesRef.current;
-        const next = particles.map(p => {
-          let nx = p.x + p.vx * dt;
-          let ny = p.y + p.vy * dt;
-
-          // Bounce off edges
-          if (nx < 0 || nx > 95) { p.vx *= -1; nx = Math.max(0, Math.min(95, nx)); }
-          if (ny < 0 || ny > 90) { p.vy *= -1; ny = Math.max(0, Math.min(90, ny)); }
-
-          p.x = nx;
-          p.y = ny;
-          return { x: nx, y: ny, size: p.size };
-        });
-        setPositions([...next]);
-      }
-
-      animFrame.current = requestAnimationFrame(animate);
-    };
-
-    animFrame.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animFrame.current);
-  }, [paused]);
-
-  return (
-    <div
-      ref={containerRef}
-      className="floating-skills-container"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onTouchStart={() => setPaused(true)}
-      onTouchEnd={() => setPaused(false)}
-    >
-      {skills.map((skill, i) => {
-        const iconData = iconMap[skill];
-        const IconComp = iconData?.Icon;
-        const pos = positions[i];
-        if (!pos) return null;
-
-        return (
-          <div
-            key={skill}
-            className="floating-skill-item"
-            style={{
-              left: `${pos.x}%`,
-              top: `${pos.y}%`,
-              width: pos.size + 'px',
-              height: pos.size + 'px',
-              transition: paused ? 'transform 0.3s ease, box-shadow 0.3s ease' : 'none',
-            }}
-            title={skill}
-          >
-            {IconComp && <IconComp size={pos.size * 0.45} color={iconData.color} />}
-          </div>
-        );
-      })}
-
-      {/* Skill name tooltip on hover */}
-      {paused && (
-        <div className="floating-skills-hint">
-          Hover over an icon to see the skill
-        </div>
-      )}
     </div>
   );
 }
 
-/* ── Stats Card ─────────────────────────────── */
-function StatCard({ label, value, sub, color }) {
+/* ── Skill Chip ──────────────────────────────── */
+function SkillChip({ name, icon }) {
+  const IconComp = icon?.Icon;
   return (
-    <motion.div
-      className="stat-card"
-      whileHover={{ y: -2, boxShadow: `0 8px 24px ${color}22` }}
-    >
-      <div className="stat-value" style={{ color }}>
-        {value ?? '—'}
+    <span className="skill-chip">
+      {IconComp && <IconComp size={16} color={icon.color} />}
+      {name}
+    </span>
+  );
+}
+
+function TechSphere() {
+  const containerRef = useRef(null);
+  const itemRefs = useRef([]);
+  const rotationRef = useRef(0);
+  const pointerRef = useRef({ x: 0, y: 0 });
+  const hoveringRef = useRef(false);
+  const radius = 142;
+
+  const positions = useMemo(() => {
+    const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+    return TECH_SPHERE_SKILLS.map((_, index) => {
+      const phi = Math.acos(1 - (2 * (index + 0.5)) / TECH_SPHERE_SKILLS.length);
+      const theta = goldenAngle * index;
+      return {
+        x: Math.sin(phi) * Math.cos(theta),
+        y: Math.cos(phi),
+        z: Math.sin(phi) * Math.sin(theta),
+      };
+    });
+  }, []);
+
+  const project = useCallback((rotation, tiltX, tiltY) => positions.map((point) => {
+    const cosRotation = Math.cos(rotation);
+    const sinRotation = Math.sin(rotation);
+    let x = point.x * cosRotation + point.z * sinRotation;
+    let y = point.y;
+    let z = -point.x * sinRotation + point.z * cosRotation;
+
+    const cosTiltX = Math.cos(tiltX);
+    const sinTiltX = Math.sin(tiltX);
+    [y, z] = [y * cosTiltX - z * sinTiltX, y * sinTiltX + z * cosTiltX];
+
+    const cosTiltY = Math.cos(tiltY);
+    const sinTiltY = Math.sin(tiltY);
+    [x, z] = [x * cosTiltY + z * sinTiltY, -x * sinTiltY + z * cosTiltY];
+
+    const depth = (z + 1) / 2;
+    return { x: x * radius, y: y * radius, z, opacity: 0.2 + depth * 0.8, scale: 0.65 + depth * 0.45 };
+  }), [positions]);
+
+  useEffect(() => {
+    let frameId;
+    const animate = () => {
+      if (!hoveringRef.current) rotationRef.current += 0.004;
+      project(rotationRef.current, pointerRef.current.y, pointerRef.current.x).forEach((point, index) => {
+        const item = itemRefs.current[index];
+        if (!item) return;
+        item.style.transform = `translate(-50%, -50%) translate3d(${point.x}px, ${point.y}px, 0) scale(${point.scale})`;
+        item.style.opacity = String(point.opacity);
+        item.style.zIndex = String(Math.round(point.z * 100));
+      });
+      frameId = requestAnimationFrame(animate);
+    };
+    frameId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frameId);
+  }, [project]);
+
+  const handlePointerMove = (event) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    pointerRef.current = {
+      x: ((event.clientX - rect.left) / rect.width - 0.5) * 0.7,
+      y: -((event.clientY - rect.top) / rect.height - 0.5) * 0.7,
+    };
+  };
+
+  return (
+    <section className="tech-sphere-section" aria-label="Interactive technology globe">
+      <p className="tech-sphere-label">My technology universe</p>
+      <div
+        ref={containerRef}
+        className="tech-sphere"
+        onPointerMove={handlePointerMove}
+        onPointerEnter={() => { hoveringRef.current = true; }}
+        onPointerLeave={() => {
+          hoveringRef.current = false;
+          pointerRef.current = { x: 0, y: 0 };
+        }}
+      >
+        <div className="tech-sphere-core" />
+        {TECH_SPHERE_SKILLS.map((name, index) => {
+          const Icon = SKILL_ICON_MAP[name]?.Icon || FiCode;
+          const color = SKILL_ICON_MAP[name]?.color || 'var(--text-secondary)';
+          return (
+            <span
+              className="tech-sphere-icon"
+              key={name}
+              ref={(element) => { itemRefs.current[index] = element; }}
+              title={name}
+              style={{ color }}
+            >
+              <Icon size={30} aria-label={name} />
+            </span>
+          );
+        })}
       </div>
+    </section>
+  );
+}
+
+/* ── Stats Card ─────────────────────────────── */
+function StatCard({ label, value, sub }) {
+  return (
+    <div className="stat-card">
+      <div className="stat-value">{value ?? '—'}</div>
       <div className="stat-label">{label}</div>
       {sub && <div className="stat-sub">{sub}</div>}
-    </motion.div>
+    </div>
   );
 }
 
@@ -569,8 +595,7 @@ function NotificationsView({ posts, lcStats, ghStats }) {
           items.push({
             id: `gh-${p._id}`,
             type: 'activity',
-            icon: '💻',
-            accent: 'var(--notif-gh)',
+            accent: 'var(--accent)',
             text: (
               <>
                 <strong>GitHub</strong> — {p.title}
@@ -583,11 +608,10 @@ function NotificationsView({ posts, lcStats, ghStats }) {
           items.push({
             id: `lc-${p._id}`,
             type: 'activity',
-            icon: '🧠',
-            accent: 'var(--notif-lc)',
+            accent: 'var(--accent)',
             text: (
               <>
-                <strong>LeetCode</strong> — {p.title}
+                <strong>LeetCode</strong> - {p.title}
               </>
             ),
             time: p.createdAt,
@@ -601,48 +625,42 @@ function NotificationsView({ posts, lcStats, ghStats }) {
       {
         id: 'ms-1',
         type: 'milestone',
-        icon: '🎯',
-        accent: 'var(--notif-pink)',
+        accent: 'var(--accent)',
         text: (<><strong>HackRx 6.0</strong> — LawBuddy AI achieved Top 44 accuracy ranking</>),
         time: '2024-12-01',
       },
       {
         id: 'ms-2',
         type: 'milestone',
-        icon: '⭐',
-        accent: 'var(--notif-purple)',
+        accent: 'var(--accent)',
         text: (<><strong>PICT Semester</strong> — Achieved CGPA 9.73/10</>),
         time: '2024-06-01',
       },
       {
         id: 'ms-3',
         type: 'milestone',
-        icon: '🏆',
-        accent: 'var(--notif-lc)',
+        accent: 'var(--accent)',
         text: (<><strong>LeetCode</strong> — Crossed {lcStats?.solved || '400'}+ problems solved</>),
         time: '2024-09-01',
       },
       {
         id: 'ms-4',
         type: 'milestone',
-        icon: '🚀',
-        accent: 'var(--notif-blue)',
+        accent: 'var(--accent)',
         text: (<><strong>BillMaster</strong> — Deployed to production, 60% faster estimation</>),
         time: '2024-08-01',
       },
       {
         id: 'ms-5',
         type: 'milestone',
-        icon: '🎓',
-        accent: 'var(--notif-green)',
+        accent: 'var(--accent)',
         text: (<><strong>PICT, Pune</strong> — Enrolled in B.E. Electronics & Telecom</>),
         time: '2023-08-01',
       },
       {
         id: 'ms-6',
         type: 'milestone',
-        icon: '🌟',
-        accent: 'var(--notif-purple)',
+        accent: 'var(--accent)',
         text: (<><strong>Portfolio</strong> — Launched this X-style developer portfolio</>),
         time: '2026-02-22',
       },
@@ -696,25 +714,18 @@ function NotificationsView({ posts, lcStats, ghStats }) {
 
       {/* Notification list */}
       {filtered.length > 0 ? (
-        filtered.map((notif, i) => (
-          <motion.div
-            className="notification-item"
-            key={notif.id}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.04, duration: 0.25 }}
-          >
+        filtered.map((notif) => (
+          <div className="notification-item" key={notif.id}>
             <div className="notif-accent-line" style={{ backgroundColor: notif.accent }} />
-            <span className="notif-icon">{notif.icon}</span>
+            <span className="notif-icon-svg"><FiZap size={16} /></span>
             <div className="notif-content">
               <p>{notif.text}</p>
               <span className="notif-time">{formatTime(notif.time)}</span>
             </div>
-          </motion.div>
+          </div>
         ))
       ) : (
         <div className="notif-empty">
-          <span className="notif-empty-icon">🔔</span>
           <p>No notifications in this category yet.</p>
         </div>
       )}
@@ -737,9 +748,9 @@ export default function MainFeed({
   likedPosts,
   toggleLike,
   loading,
+  visitCount,
   onOpenDrawer,
 }) {
-  const [feedTab, setFeedTab] = useState('foryou');
 
   const headerTitle = useMemo(() => {
     switch (path) {
@@ -759,6 +770,8 @@ export default function MainFeed({
         return 'Home';
     }
   }, [path]);
+
+  const showHomeLoadingState = path === '/' && loading;
 
   return (
     <main className="main-feed">
@@ -788,27 +801,13 @@ export default function MainFeed({
           </button>
         </div>
 
-        {/* Tabs (Home only) */}
-        {path === '/' && (
-          <div className="feed-tabs">
-            {['foryou', 'following'].map((tab) => (
-              <button
-                key={tab}
-                className={`feed-tab ${feedTab === tab ? 'active' : ''}`}
-                onClick={() => setFeedTab(tab)}
-              >
-                {tab === 'foryou' ? 'For you' : 'Following'}
-                {feedTab === tab && (
-                  <motion.span
-                    className="tab-indicator"
-                    layoutId="feedTab"
-                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                  />
-                )}
-              </button>
-            ))}
+        {/* Visit counter (Home only) */}
+        {/* {path === '/' && visitCount != null && !showHomeLoadingState && (
+          <div className="feed-view-counter">
+            <FiBarChart2 size={14} />
+            <span>{visitCount.toLocaleString()} profile visits</span>
           </div>
-        )}
+        )} */}
       </header>
 
       {/* Route Content */}
@@ -822,26 +821,43 @@ export default function MainFeed({
         >
           {/* HOME — Timeline */}
           {path === '/' && (
-            <motion.div variants={stagger} initial="initial" animate="animate">
-              {/* Compose Box */}
-              <div className="compose-box">
-                <div className="compose-avatar">
-                  {ghStats?.avatar ? (
-                    <img src={ghStats.avatar} alt="" />
-                  ) : (
-                    <div className="compose-avatar-placeholder">AP</div>
-                  )}
+            loading ? (
+              <FeedSkeletonLoader />
+            ) : (
+              <div>
+                {/* Compose Box */}
+                <div className="compose-box">
+                  <div className="compose-avatar">
+                    {ghStats?.avatar ? (
+                      <img src={ghStats.avatar} alt="" />
+                    ) : (
+                      <div className="compose-avatar-placeholder">AP</div>
+                    )}
+                  </div>
+                  <div className="compose-input">
+                    <span>What&apos;s happening</span>
+                  </div>
                 </div>
-                <div className="compose-input">
-                  <span>Here&apos;s What&apos;s Happening in my day !!</span>
-                </div>
-              </div>
 
-              {/* Loading skeleton or posts */}
-              {loading ? (
-                <FeedSkeletonLoader />
-              ) : (
-                [...posts]
+                {/* Profile prompt */}
+                <div
+                  className="profile-prompt"
+                  onClick={() => {
+                    window.history.pushState({}, '', '/profile');
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                  }}
+                >
+                  <div className="profile-prompt-inner">
+                    <FiUser size={18} className="profile-prompt-icon" />
+                    <div className="profile-prompt-text">
+                      <strong>Aditya Potdar</strong>
+                      <span>Full-Stack Developer / AI Systems Builder / PICT Pune '27</span>
+                    </div>
+                    <span className="profile-prompt-cta">View Profile <FiArrowRight size={12} /></span>
+                  </div>
+                </div>
+
+                {[...posts]
                   .sort((a, b) => {
                     if (a.type === 'pinned') return -1;
                     if (b.type === 'pinned') return 1;
@@ -850,24 +866,24 @@ export default function MainFeed({
                     return db - da;
                   })
                   .map((post, i) => (
-                  <TweetCard
-                    key={post._id || `${post.type}-${post.createdAt}-${i}`}
-                    post={post}
-                    index={i}
-                    liked={!!likedPosts[i]}
-                    onToggleLike={toggleLike}
-                    avatar={ghStats?.avatar}
-                  />
-                ))
-              )}
-            </motion.div>
+                    <TweetCard
+                      key={post._id || `${post.type}-${post.createdAt}-${i}`}
+                      post={post}
+                      index={i}
+                      liked={!!likedPosts[i]}
+                      onToggleLike={toggleLike}
+                      avatar={ghStats?.avatar}
+                    />
+                  ))}
+              </div>
+            )
           )}
 
           {/* PROJECTS / EXPLORE */}
           {path === '/projects' && (
             <div className="projects-view">
               <div className="section-intro">
-                <h3>Featured Projects</h3>
+                <h3><FiLayers size={18} /> Featured Projects</h3>
                 <p>Built with passion, shipped with precision.</p>
               </div>
               <div className="projects-grid">
@@ -887,7 +903,7 @@ export default function MainFeed({
           {path === '/bookmarks' && (
             <div className="bookmarks-view">
               <div className="section-intro">
-                <h3>Saved Resources</h3>
+                <h3><FiBookmark size={18} /> Saved Resources</h3>
                 <p>My go-to references and bookmarks.</p>
               </div>
               {[
@@ -912,17 +928,12 @@ export default function MainFeed({
                   desc: 'Learn how to design large-scale systems.',
                 },
               ].map((bm, i) => (
-                <motion.a
+                <a
                   key={i}
                   href={bm.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bookmark-card"
-                  variants={fadeUp}
-                  initial="initial"
-                  animate="animate"
-                  transition={{ delay: i * 0.1 }}
-                  whileHover={{ x: 4 }}
                 >
                   <div className="bookmark-info">
                     <h4>{bm.title}</h4>
@@ -930,7 +941,7 @@ export default function MainFeed({
                     <span className="bookmark-url">{bm.url}</span>
                   </div>
                   <FiExternalLink size={16} className="bookmark-ext" />
-                </motion.a>
+                </a>
               ))}
             </div>
           )}
@@ -939,32 +950,20 @@ export default function MainFeed({
           {path === '/skills' && (
             <div className="skills-view">
               <div className="section-intro">
-                <h3>Tech Stack</h3>
+                <h3><FiCode size={18} /> Tech Stack</h3>
                 <p>Technologies I build with daily.</p>
               </div>
-              {Object.entries(skillCategories).map(([cat, skills], ci) => (
-                <motion.div
-                  key={cat}
-                  className="skill-category"
-                  variants={fadeUp}
-                  initial="initial"
-                  animate="animate"
-                  transition={{ delay: ci * 0.1 }}
-                >
+              {Object.entries(skillCategories).map(([cat, skills]) => (
+                <div key={cat} className="skill-category">
                   <h4 className="skill-category-title">{cat}</h4>
                   <div className="skill-chips">
-                    {skills.map((s, si) => (
-                      <SkillChip key={s} name={s} icon={SKILL_ICON_MAP[s]} delay={ci * 0.1 + si * 0.04} />
+                    {skills.map((s) => (
+                      <SkillChip key={s} name={s} icon={SKILL_ICON_MAP[s]} />
                     ))}
                   </div>
-                </motion.div>
+                </div>
               ))}
-
-              {/* Floating Playground */}
-              <div className="floating-section">
-                <h4 className="skill-category-title">🎯 Tech Playground</h4>
-                <FloatingSkills skills={Object.values(skillCategories).flat()} iconMap={SKILL_ICON_MAP} />
-              </div>
+              <TechSphere />
             </div>
           )}
 
@@ -988,14 +987,12 @@ export default function MainFeed({
                   )}
                 </div>
                 <div className="profile-actions">
-                  <motion.a
+                  <a
                     href="mailto:adityapotdar2404@gmail.com"
                     className="profile-edit-btn"
-                    whileHover={{ scale: 1.04 }}
-                    whileTap={{ scale: 0.96 }}
                   >
                     Contact Me
-                  </motion.a>
+                  </a>
                 </div>
                 <h2 className="profile-display-name">Aditya Potdar</h2>
                 <span className="profile-handle">@aaditya2404</span>
@@ -1030,17 +1027,9 @@ export default function MainFeed({
                   <FiGithub size={18} /> GitHub Stats
                 </h3>
                 <div className="stats-grid">
-                  <StatCard
-                    label="Repositories"
-                    value={ghStats?.repos}
-                    color="#1d9bf0"
-                  />
-                  <StatCard
-                    label="Followers"
-                    value={ghStats?.followers}
-                    color="#7856ff"
-                  />
-                  <StatCard label="Stars" value={ghStats?.stars} color="#f7b731" />
+                  <StatCard label="Repositories" value={ghStats?.repos} />
+                  <StatCard label="Followers" value={ghStats?.followers} />
+                  <StatCard label="Stars" value={ghStats?.stars} />
                 </div>
 
                 {/* GitHub Contribution Heatmap */}
@@ -1058,38 +1047,18 @@ export default function MainFeed({
                   <SiLeetcode size={18} /> LeetCode Stats
                 </h3>
                 <div className="stats-grid">
-                  <StatCard
-                    label="Total Solved"
-                    value={lcStats?.solved}
-                    color="#ffa116"
-                  />
-                  <StatCard label="Easy" value={lcStats?.easy} color="#00b8a3" />
-                  <StatCard
-                    label="Medium"
-                    value={lcStats?.medium}
-                    color="#ffc01e"
-                  />
-                  <StatCard label="Hard" value={lcStats?.hard} color="#ff375f" />
+                  <StatCard label="Total Solved" value={lcStats?.solved} />
+                  <StatCard label="Easy" value={lcStats?.easy} />
+                  <StatCard label="Medium" value={lcStats?.medium} />
+                  <StatCard label="Hard" value={lcStats?.hard} />
                   {lcStats?.contestRating && (
-                    <StatCard
-                      label="Contest Rating"
-                      value={lcStats.contestRating}
-                      color="#a855f7"
-                    />
+                    <StatCard label="Contest Rating" value={lcStats.contestRating} />
                   )}
                   {lcStats?.streak && (
-                    <StatCard
-                      label="Current Streak"
-                      value={`${lcStats.streak}🔥`}
-                      color="#ff6b35"
-                    />
+                    <StatCard label="Current Streak" value={lcStats.streak} />
                   )}
                   {lcStats?.totalActiveDays && (
-                    <StatCard
-                      label="Active Days"
-                      value={lcStats.totalActiveDays}
-                      color="#1d9bf0"
-                    />
+                    <StatCard label="Active Days" value={lcStats.totalActiveDays} />
                   )}
                 </div>
                 {lcStats?.ranking && (
@@ -1109,64 +1078,44 @@ export default function MainFeed({
 
               {/* Education */}
               <div className="profile-section">
-                <h3 className="profile-section-title">🎓 Education</h3>
-                <motion.div
-                  className="education-card"
-                  variants={fadeUp}
-                  initial="initial"
-                  animate="animate"
-                >
+                <h3 className="profile-section-title"><FiBookOpen size={18} /> Education</h3>
+                <div className="education-card">
                   <div className="education-header">
                     <h4>PICT, Pune</h4>
                     <span className="education-year">2023 — 2027</span>
                   </div>
                   <p>B.E. Electronics & Computer Engineering</p>
                   <div className="education-cgpa">
-                    <span className="cgpa-badge">CGPA 9.73 / 10</span>
+                    <span className="cgpa-badge">CGPA 9.82 / 10</span>
                   </div>
-                </motion.div>
-                <motion.div
-                  className="education-card"
-                  variants={fadeUp}
-                  initial="initial"
-                  animate="animate"
-                  transition={{ delay: 0.1 }}
-                >
+                </div>
+                <div className="education-card">
                   <div className="education-header">
                     <h4>SNBP International School, Pune</h4>
                     <span className="education-year">2021 — 2023</span>
                   </div>
-                  <p>HSC — 88.33%</p>
-                </motion.div>
+                  <p>HSC — 88.17%</p>
+                </div>
               </div>
 
               {/* Achievements */}
-              <div className="profile-section">
-                <h3 className="profile-section-title">🏅 Achievements</h3>
+              {/* <div className="profile-section">
+                <h3 className="profile-section-title"><FiAward size={18} /> Achievements</h3>
                 <div className="achievements-grid">
                   {[
-                    { icon: '🏆', text: 'Top 44 at HackRx 6.0' },
-                    { icon: '💻', text: '400+ LeetCode Problems' },
-                    { icon: '⭐', text: 'CGPA 9.73/10 at PICT' },
-                    { icon: '🚀', text: 'Built 3+ Production Apps' },
-                    { icon: '🎖', text: 'CodeChef 3-Star Rated' },
-                    { icon: '📜', text: 'Google Cloud Certified' },
-                  ].map((a, i) => (
-                    <motion.div
-                      className="achievement-item"
-                      key={i}
-                      variants={fadeUp}
-                      initial="initial"
-                      animate="animate"
-                      transition={{ delay: i * 0.08 }}
-                      whileHover={{ scale: 1.04 }}
-                    >
-                      <span className="achievement-icon">{a.icon}</span>
-                      <span>{a.text}</span>
-                    </motion.div>
+                    'Top 44 at HackRx 6.0',
+                    '400+ LeetCode Problems',
+                    'CGPA 9.73/10 at PICT',
+                    'Built 3+ Production Apps',
+                    'CodeChef 3-Star Rated',
+                    'Google Cloud Certified',
+                  ].map((text, i) => (
+                    <div className="achievement-item" key={i}>
+                      <span>{text}</span>
+                    </div>
                   ))}
                 </div>
-              </div>
+              </div> */}
             </div>
           )}
         </motion.div>

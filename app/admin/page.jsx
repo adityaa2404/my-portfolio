@@ -18,6 +18,7 @@ export default function AdminPage() {
   const [dateTime, setDateTime] = useState('');
   const [pinned, setPinned] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   const fileRef = useRef(null);
 
@@ -102,22 +103,17 @@ export default function AdminPage() {
 
     try {
       const res = await fetch('/api/posts', {
-        method: 'POST',
+        method: editingId ? 'PATCH' : 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-admin-secret': secret,
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify(editingId ? { ...body, id: editingId } : body),
       });
       const data = await res.json();
       if (res.ok) {
-        setMsg('Post created!');
-        setTitle('');
-        setText('');
-        setTag('');
-        setImage('');
-        setDateTime('');
-        setPinned(false);
+        setMsg(editingId ? 'Post updated!' : 'Post created!');
+        resetForm();
         fetchPosts();
       } else {
         setMsg('Error: ' + (data.error || 'Failed'));
@@ -126,6 +122,36 @@ export default function AdminPage() {
       setMsg('Error: ' + err.message);
     }
     setLoading(false);
+  }
+
+  function resetForm() {
+    setEditingId(null);
+    setTitle('');
+    setText('');
+    setType('admin');
+    setTag('');
+    setImage('');
+    setDateTime('');
+    setPinned(false);
+    if (fileRef.current) fileRef.current.value = '';
+  }
+
+  function handleEdit(post) {
+    const date = new Date(post.createdAt);
+    const localDateTime = Number.isNaN(date.getTime())
+      ? ''
+      : new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+
+    setEditingId(post._id);
+    setType(post.type || 'admin');
+    setTitle(post.title || '');
+    setText(post.text || '');
+    setTag(post.tag || '');
+    setImage(post.image || '');
+    setDateTime(localDateTime);
+    setPinned(Boolean(post.pinned));
+    setMsg(`Editing post: ${post.title || post.text.slice(0, 40)}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   async function handleDelete(id) {
@@ -158,7 +184,7 @@ export default function AdminPage() {
     return (
       <div style={styles.loginWrap}>
         <form onSubmit={handleLogin} style={styles.loginCard}>
-          <h1 style={styles.loginTitle}>🔐 Admin</h1>
+          <h1 style={styles.loginTitle}>Admin</h1>
           <input
             type="password"
             placeholder="Enter admin secret"
@@ -180,10 +206,10 @@ export default function AdminPage() {
   return (
     <div style={styles.wrap}>
       <header style={styles.header}>
-        <h1 style={styles.headerTitle}>📝 Admin Dashboard</h1>
+        <h1 style={styles.headerTitle}>Admin Dashboard</h1>
         <div style={styles.headerActions}>
           <button onClick={handleSeed} style={styles.btnSecondary} disabled={loading}>
-            🌱 Seed Posts
+            Seed Posts
           </button>
           <button
             onClick={() => {
@@ -200,9 +226,9 @@ export default function AdminPage() {
 
       {msg && <div style={styles.toast}>{msg}</div>}
 
-      {/* Create Post Form */}
+      {/* Create / Edit Post Form */}
       <form onSubmit={handleSubmit} style={styles.form}>
-        <h2 style={styles.formTitle}>Create New Post</h2>
+        <h2 style={styles.formTitle}>{editingId ? 'Edit Post' : 'Create New Post'}</h2>
 
         <div style={styles.row}>
           <div style={styles.field}>
@@ -278,7 +304,7 @@ export default function AdminPage() {
               style={styles.btnSecondary}
               disabled={uploading}
             >
-              {uploading ? '⏳ Uploading...' : '📎 Upload Image'}
+              {uploading ? 'Uploading...' : 'Upload Image'}
             </button>
             <span style={styles.orText}>or</span>
             <input
@@ -297,7 +323,7 @@ export default function AdminPage() {
                 onClick={() => setImage('')}
                 style={styles.removeImg}
               >
-                ✕
+                X
               </button>
             </div>
           )}
@@ -314,9 +340,16 @@ export default function AdminPage() {
           </label>
         </div>
 
-        <button type="submit" style={styles.btnPrimary} disabled={loading}>
-          {loading ? 'Posting...' : '🚀 Publish Post'}
-        </button>
+        <div style={styles.formActions}>
+          <button type="submit" style={styles.btnPrimary} disabled={loading}>
+            {loading ? 'Saving...' : editingId ? 'Save Changes' : 'Publish Post'}
+          </button>
+          {editingId && (
+            <button type="button" style={styles.btnSecondary} onClick={resetForm} disabled={loading}>
+              Cancel Edit
+            </button>
+          )}
+        </div>
       </form>
 
       {/* Existing Posts */}
@@ -329,7 +362,7 @@ export default function AdminPage() {
               <span style={styles.postDate}>
                 {new Date(p.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
               </span>
-              {p.pinned && <span style={styles.pinnedBadge}>📌 Pinned</span>}
+              {p.pinned && <span style={styles.pinnedBadge}>Pinned</span>}
             </div>
             {p.title && <h4 style={styles.postTitle}>{p.title}</h4>}
             <p style={styles.postText}>{p.text}</p>
@@ -338,12 +371,15 @@ export default function AdminPage() {
             )}
             {p.tag && <span style={styles.postTag}>{p.tag}</span>}
             <div style={styles.postActions}>
-              <span style={styles.postStat}>💬 {p.replies}</span>
-              <span style={styles.postStat}>🔄 {p.reposts}</span>
-              <span style={styles.postStat}>❤️ {p.likes}</span>
-              <span style={styles.postStat}>👁 {p.views}</span>
+              <span style={styles.postStat}>Replies {p.replies}</span>
+              <span style={styles.postStat}>Reposts {p.reposts}</span>
+              <span style={styles.postStat}>Likes {p.likes}</span>
+              <span style={styles.postStat}>Views {p.views}</span>
+              <button onClick={() => handleEdit(p)} style={styles.editBtn}>
+                Edit
+              </button>
               <button onClick={() => handleDelete(p._id)} style={styles.deleteBtn}>
-                🗑 Delete
+                Delete
               </button>
             </div>
           </div>
@@ -470,7 +506,7 @@ const styles = {
     cursor: 'pointer',
   },
   btnPrimary: {
-    width: '100%',
+    flex: 1,
     padding: '12px 0',
     background: '#1d9bf0',
     color: '#fff',
@@ -479,6 +515,11 @@ const styles = {
     fontWeight: 700,
     fontSize: 15,
     cursor: 'pointer',
+  },
+  formActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
   },
   btnSecondary: {
     padding: '8px 16px',
@@ -575,8 +616,17 @@ const styles = {
     borderTop: '1px solid #1a1a1a',
   },
   postStat: { fontSize: 12, color: '#71767b' },
-  deleteBtn: {
+  editBtn: {
     marginLeft: 'auto',
+    padding: '4px 12px',
+    background: 'transparent',
+    border: '1px solid #1d9bf066',
+    color: '#1d9bf0',
+    borderRadius: 9999,
+    fontSize: 12,
+    cursor: 'pointer',
+  },
+  deleteBtn: {
     padding: '4px 12px',
     background: 'transparent',
     border: '1px solid #f4212e33',

@@ -1,12 +1,12 @@
 const FEEDS = {
-  tech: 'https://feeds.feedburner.com/TechCrunch/',
+  tech: 'https://hnrss.org/newest?points=100&count=10',
   cricket: 'https://www.espncricinfo.com/rss/content/story/feeds/0.xml',
   smartphones: 'https://www.gsmarena.com/rss-news-reviews.php3',
   cars: 'https://www.autocarindia.com/RSS/rss.ashx',
   bikes: 'https://www.rushlane.com/feed',
 };
 
-/* Minimal RSS XML parser — extracts <item> title + link */
+/* Minimal RSS XML parser — extracts <item> title + link + pubDate */
 function parseRSS(xml) {
   const items = [];
   const itemRegex = /<item[\s>]([\s\S]*?)<\/item>/gi;
@@ -21,16 +21,16 @@ function parseRSS(xml) {
   return items;
 }
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const category = searchParams.get('category');
 
   if (category && FEEDS[category]) {
-    // Fetch a single feed
     try {
       const res = await fetch(FEEDS[category], {
         headers: { 'User-Agent': 'Mozilla/5.0 (compatible; PortfolioBot/1.0)' },
-        next: { revalidate: 1800 }, // cache 30 min
       });
       const xml = await res.text();
       const items = parseRSS(xml).slice(0, 5);
@@ -47,7 +47,6 @@ export async function GET(request) {
       try {
         const res = await fetch(url, {
           headers: { 'User-Agent': 'Mozilla/5.0 (compatible; PortfolioBot/1.0)' },
-          next: { revalidate: 1800 },
         });
         const xml = await res.text();
         results[key] = parseRSS(xml).slice(0, key === 'tech' ? 5 : 3);

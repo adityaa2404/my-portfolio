@@ -60,6 +60,41 @@ export async function POST(req) {
 }
 
 // DELETE /api/posts — delete a post by id (admin only)
+// PATCH /api/posts — edit a post (admin only)
+export async function PATCH(req) {
+  try {
+    const secret = req.headers.get('x-admin-secret');
+    if (secret !== process.env.ADMIN_SECRET) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await req.json();
+    if (!body.id || !body.text?.trim()) {
+      return NextResponse.json({ error: 'Post ID and text are required.' }, { status: 400 });
+    }
+
+    await dbConnect();
+    const post = await Post.findByIdAndUpdate(
+      body.id,
+      {
+        type: body.type || 'admin',
+        title: body.title || '',
+        text: body.text.trim(),
+        image: body.image || '',
+        tag: body.tag || '',
+        pinned: Boolean(body.pinned),
+        ...(body.createdAt ? { createdAt: new Date(body.createdAt) } : {}),
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!post) return NextResponse.json({ error: 'Post not found.' }, { status: 404 });
+    return NextResponse.json(post);
+  } catch (err) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
 export async function DELETE(req) {
   try {
     const secret = req.headers.get('x-admin-secret');
