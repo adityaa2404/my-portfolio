@@ -1,21 +1,30 @@
 import './globals.css';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
-  || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
-
 export const metadata = {
-  metadataBase: new URL(siteUrl),
-  title: 'Aditya Potdar | Developer OS Portfolio',
-  description:
-    'Twitter/X-inspired living portfolio of Aditya Potdar — Full Stack Developer, competitive programmer, AI builder.',
-  icons: {
-    icon: '/logo.png',
-  },
+  title: "Aditya Potdar | Portfolio",
+  description: "Building, solving, and exploring technology.",
+
   openGraph: {
-    title: 'Aditya Potdar | Developer OS',
-    description:
-      'A living developer timeline — projects, skills, and achievements presented as a developer operating system.',
-    type: 'website',
+    title: "Aditya Potdar | Portfolio",
+    description: "Building, solving, and exploring technology.",
+    url: "https://adityaa2404.vercel.app",
+    siteName: "Aditya Potdar",
+    images: [
+      {
+        url: "https://adityaa2404.vercel.app/og.png",
+        width: 1200,
+        height: 627,
+        alt: "Aditya Potdar Portfolio",
+      },
+    ],
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Aditya Potdar | Portfolio",
+    description: "Building, solving, and exploring technology.",
+    images: ["https://adityaa2404.vercel.app/og.png"],
   },
 };
 

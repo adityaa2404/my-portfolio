@@ -63,8 +63,8 @@ export default function LeftSidebar({ navItems, path, onNavClick, avatar, notifC
       </nav>
 
       {/* Hire Me button */}
-      <a href="mailto:adityapotdar2404@gmail.com" className="sidebar-post-btn">
-        Hire Me
+      <a href="https://drive.google.com/file/d/1Qe-BIuwPZzF-f1EskZl-KsPxB1MbwZxK/view?usp=sharing" className="sidebar-post-btn">
+        Download CV
       </a>
 
       {/* User identity block */}
